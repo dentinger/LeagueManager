@@ -1,0 +1,20 @@
+# Common patterns to ignore
+._*
+build/
+*.class
+.DS_Store
+*.[ejw]ar
+.gradle/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.log
+*.py[cdo]
+*.swp
+.tags
+target/
+
+# Project-specific patterns to ignore
+!/gradle/wrapper/gradle-wrapper.jar
+accessingdataneo4j.db/
