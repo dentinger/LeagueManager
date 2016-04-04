@@ -16,3 +16,5 @@ Ingesting large amounts of data in any databse is difficult and there are few go
 How to use
 ----------
 *TBD*
+
+[Project work that is still needed](docs/TODOS.md)
