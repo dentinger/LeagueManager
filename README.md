@@ -17,4 +17,4 @@ How to use
 ----------
 *TBD*
 
-[Project work that is still needed](./docs/TODOS.md)
+[Project work that is still needed](./docs/TODOs.md)
