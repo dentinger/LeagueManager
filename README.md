@@ -4,6 +4,7 @@ Small project to test different graph databases and different strategies of grap
 Prerequisites
 -----------------
 This project requires the following:
+
 1. Java 8
 2. Gradle
 3. Local install of Neo4J
