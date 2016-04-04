@@ -62,7 +62,7 @@ public class LeagueLoader {
             aeLogger.error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
           }
         });
-    logger.info("Load complete: {}ms",System.currentTimeMillis()-start);
+    logger.info("Load Leagues complete: {}ms",System.currentTimeMillis()-start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
