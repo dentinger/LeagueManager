@@ -31,6 +31,10 @@ public class Neo4jDemoApplication {
       if( list.contains("loadLeagues")){
         leagueLoader.loadLeagues();
       }
+      if(list.contains("loadAll")) {
+        regionLoader.loadRegions();
+        leagueLoader.loadLeagues();
+      }
 		};
 	}
 

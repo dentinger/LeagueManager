@@ -3,8 +3,6 @@ package org.dentinger.tutorial.client;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.LongStream;
-import org.dentinger.tutorial.client.dto.RegionDTO;
-import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
