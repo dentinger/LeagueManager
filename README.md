@@ -15,6 +15,14 @@ Ingesting large amounts of data in any databse is difficult and there are few go
 
 How to use
 ----------
+To run the test project either run the Spring Boot application from the command line or from your IDE of choice.
+
+|Functionality |JVM parameter |Description|
+|---|---|---|
+| Load All data | loadAll  |Run all loaders in the application.   |
+| Load League data  | loadLeagues  | Only load league data to the application.  |
+| Load Region data  | loadRegions  | Only load region data to the application. |
+
 *TBD*
 
 [Project work that is still needed](./docs/TODOs.md)
