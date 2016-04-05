@@ -11,7 +11,7 @@ This project requires the following:
 
 Overview
 --------
-Ingesting large amounts of data in any databse is difficult and there are few good resources for testing loading techniques in NOSQL databases.
+Ingesting large amounts of data in any database is difficult and there are few good resources for testing loading techniques in NOSQL databases. To help investigate different loading strategies in different Graph database technologies, we have decided to model the relationships of the ever popular SportsBall teams.
 
 How to use
 ----------

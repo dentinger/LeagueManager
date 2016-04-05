@@ -5,7 +5,16 @@ neo4j:
   packages:
     - org.dentinger.tutorial.domain
 
-region.count: 20
-league.perRegion.count: 150
-team.perLeague.count: 400
+region:
+  count: 20
+league:
+  perRegion:
+    count: 150
+venues:
+  count: 100
+  count.maxPerLeague: 20
+
+team:
+  perLeague:
+    count: 400
 

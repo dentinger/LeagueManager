@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.dentinger.tutorial.loader.LeagueLoader;
 import org.dentinger.tutorial.loader.RegionLoader;
+import org.dentinger.tutorial.loader.VenueLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -18,25 +19,30 @@ public class Neo4jDemoApplication {
 
   private final static Logger log = LoggerFactory.getLogger(Neo4jDemoApplication.class);
 
-	public static void main(String[] args) {
-		SpringApplication.run(Neo4jDemoApplication.class, args);
-	}
-  
-	@Bean CommandLineRunner runLoader(RegionLoader regionLoader, LeagueLoader leagueLoader){
-		return args -> {
-			List<String> list = Arrays.asList(args);
-      if( list.contains("loadRegions")){
-        regionLoader.loadRegions();
-      }
-      if( list.contains("loadLeagues")){
-        leagueLoader.loadLeagues();
-      }
-      if(list.contains("loadAll")) {
-        regionLoader.loadRegions();
-        leagueLoader.loadLeagues();
-      }
-		};
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(Neo4jDemoApplication.class, args);
+  }
 
+  @Bean CommandLineRunner runLoader(RegionLoader regionLoader,
+                                    LeagueLoader leagueLoader,
+                                    VenueLoader venueLoader) {
+    return args -> {
+      List<String> list = Arrays.asList(args);
+      if (list.contains("loadRegions")) {
+        regionLoader.loadRegions();
+      }
+      if (list.contains("loadLeagues")) {
+        leagueLoader.loadLeagues();
+      }
+      if(list.contains("loadVenues")) {
+        venueLoader.loadVenues();
+      }
+      if (list.contains("loadAll")) {
+        regionLoader.loadRegions();
+        leagueLoader.loadLeagues();
+        venueLoader.loadVenues();
+      }
+    };
+  }
 
 }
