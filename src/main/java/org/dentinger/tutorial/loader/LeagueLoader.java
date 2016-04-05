@@ -6,8 +6,8 @@ import java.util.Map;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.LeagueClient;
 import org.dentinger.tutorial.client.RegionClient;
-import org.dentinger.tutorial.client.dto.LeagueDTO;
-import org.dentinger.tutorial.client.dto.RegionDTO;
+import org.dentinger.tutorial.domain.League;
+import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
@@ -26,12 +26,13 @@ public class LeagueLoader {
   private LeagueClient leagueClient;
 
   private String MERGE_LEAGUES =
-      "unwind {json} as q " +
-          "merge (r:Region {id: q.regionId}) " +
-          "merge (l:League {id: q.id}) " +
-          "  on create set l.name = q.name " +
-          "  on match set l.name = q.name " +
-          "merge (r)-[:SANCTIONS]-(l)";
+      "unwind {json} as league "
+          + "unwind league.regions as region "
+          + "   merge (r:Region {id: region.id})"
+          + "    merge (l:League {id: league.id})"
+          + "     on create set l.name = league.name "
+          + "     on match set l.name = league.name "
+          + "    merge (r)-[:SANCTIONS]-(l)";
 
   @Autowired
   public LeagueLoader(Neo4jProperties neo4jProperties,
@@ -47,12 +48,13 @@ public class LeagueLoader {
   public void loadLeagues() {
     Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    List<RegionDTO> regions = regionClient.getRegions();
+    List<Region> regions = regionClient.getRegions();
 
     long start = System.currentTimeMillis();
     regions.stream()
         .forEach(region -> {
-          List<LeagueDTO> leagues = leagueClient.getLeagues(region.getId());
+          List<League> leagues = leagueClient.getLeagues(region);
+
           logger.info("About to load {} leagues for region({})",leagues.size(),region.getId());
           Map<String, Object> map = new HashMap<String, Object>();
           map.put("json", leagues);

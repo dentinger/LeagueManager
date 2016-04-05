@@ -6,6 +6,7 @@ import java.util.Map;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.RegionClient;
 import org.dentinger.tutorial.client.dto.RegionDTO;
+import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
@@ -38,7 +39,7 @@ public class RegionLoader {
   public void loadRegions() {
     Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    List<RegionDTO> regions = regionClient.getRegions();
+    List<Region> regions = regionClient.getRegions();
     logger.info("About to load {} regions", regions.size());
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", regions);

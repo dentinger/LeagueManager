@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.stream.LongStream;
 import org.dentinger.tutorial.client.dto.RegionDTO;
 import org.dentinger.tutorial.domain.League;
+import org.dentinger.tutorial.domain.Region;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class RegionClient {
-  private List<RegionDTO> regions;
+  private List<Region> regions;
   private int numRegions;
 
   @Autowired
@@ -19,12 +20,12 @@ public class RegionClient {
     numRegions = Integer.valueOf(environment.getRequiredProperty("region.count"));
   }
 
-  public List<RegionDTO> getRegions() {
+  public List<Region> getRegions() {
     regions = new ArrayList<>();
     LongStream.range(0, numRegions)
         .forEach(i -> {
           Long regionId = i+1;
-          regions.add(new RegionDTO(regionId, "Region" + regionId));
+          regions.add(new Region(regionId, "Region" + regionId));
         });
     return regions;
   }
