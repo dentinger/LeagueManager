@@ -23,6 +23,9 @@ To run the test project either run the Spring Boot application from the command 
 | Load League data  | loadLeagues  | Only load league data to the application.  |
 | Load Region data  | loadRegions  | Only load region data to the application. |
 
-*TBD*
+Sample usage: *java -jar leagueManager-0.0.1-RELEASE.jar loadLeagues loadRegions*
+
+This will load the leagues and regions into the application.
+
 
 [Project work that is still needed](./docs/TODOs.md)
