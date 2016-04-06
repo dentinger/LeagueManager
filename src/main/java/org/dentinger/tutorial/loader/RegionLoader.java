@@ -48,7 +48,7 @@ public class RegionLoader {
     } catch (Exception e) {
       aeLogger.error("Unable to update graph, regionCount={}", regions.size(), e);
     }
-    logger.info("Load complete: {}ms", System.currentTimeMillis() - start);
+    logger.info("Loading of {} Regions complete: {}ms", regions.size(), System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {

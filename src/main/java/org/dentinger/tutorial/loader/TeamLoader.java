@@ -3,6 +3,7 @@ package org.dentinger.tutorial.loader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.LeagueClient;
 import org.dentinger.tutorial.client.RegionClient;
@@ -27,6 +28,7 @@ public class TeamLoader {
   private TeamClient teamClient;
   private LeagueClient leagueClient;
   private RegionClient regionClient;
+  private final AtomicLong recordsWritten = new AtomicLong(0);
 
   private String MERGE_LEAGUES =
       "unwind {json} as league "
@@ -55,6 +57,7 @@ public class TeamLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = regionClient.getRegions();
 
+    recordsWritten.set(0);
     long start = System.currentTimeMillis();
     regions.stream()
         .forEach(region -> {
@@ -64,7 +67,11 @@ public class TeamLoader {
                 List<Team> teams = teamClient.getTeams(league);
                 logger.info("About to load {} teams for league({})", teams.size(), league.getId());
                 teams.stream()
-                    .forEach(System.out::println);
+                    .forEach(team -> {
+                      // TODO Add neo stuff
+                      logger.info("New team: {}",team);
+                      recordsWritten.incrementAndGet();
+                    });
 //                Map<String, Object> map = new HashMap<String, Object>();
 //                map.put("json", leagues);
 //                try {
@@ -74,7 +81,7 @@ public class TeamLoader {
 //                }
           });
         });
-    logger.info("Load Teams complete: {}ms", System.currentTimeMillis() - start);
+    logger.info("Loading of {} Teams complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {

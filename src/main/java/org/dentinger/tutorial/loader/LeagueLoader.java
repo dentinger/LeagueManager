@@ -3,6 +3,7 @@ package org.dentinger.tutorial.loader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.LeagueClient;
 import org.dentinger.tutorial.client.RegionClient;
@@ -24,6 +25,7 @@ public class LeagueLoader {
   private SessionFactory sessionFactory;
   private RegionClient regionClient;
   private LeagueClient leagueClient;
+  private final AtomicLong recordsWritten = new AtomicLong(0);
 
   private String MERGE_LEAGUES =
       "unwind {json} as league "
@@ -50,6 +52,7 @@ public class LeagueLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = regionClient.getRegions();
 
+    recordsWritten.set(0);
     long start = System.currentTimeMillis();
     regions.stream()
         .forEach(region -> {
@@ -60,11 +63,12 @@ public class LeagueLoader {
           map.put("json", leagues);
           try {
             neo4jTemplate.execute(MERGE_LEAGUES, map);
+            recordsWritten.incrementAndGet();
           } catch (Exception e) {
             aeLogger.error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
           }
         });
-    logger.info("Load Leagues complete: {}ms",System.currentTimeMillis()-start);
+    logger.info("Loading of {} Leagues complete: {}ms",recordsWritten.get(), System.currentTimeMillis()-start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
