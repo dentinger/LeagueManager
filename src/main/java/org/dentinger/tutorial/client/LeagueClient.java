@@ -16,7 +16,7 @@ public class LeagueClient {
 
   @Autowired
   public LeagueClient(Environment environment) {
-    perRegion = Integer.valueOf(environment.getRequiredProperty("league.perRegion.count"));
+    perRegion = Integer.valueOf(environment.getRequiredProperty("leagues.perRegion.count"));
   }
 
   public List<League> getLeagues(Long regionId) {

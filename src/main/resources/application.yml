@@ -7,14 +7,13 @@ neo4j:
 
 region:
   count: 20
-league:
+leagues:
   perRegion:
     count: 150
 venues:
   count: 100
   count.maxPerLeague: 20
 
-team:
-  perLeague:
-    count: 400
+teams:
+  perLeague.count: 400
 

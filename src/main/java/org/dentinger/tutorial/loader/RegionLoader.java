@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.RegionClient;
-import org.dentinger.tutorial.client.dto.RegionDTO;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.neo4j.ogm.session.Session;

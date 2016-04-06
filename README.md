@@ -13,6 +13,14 @@ Overview
 --------
 Ingesting large amounts of data in any database is difficult and there are few good resources for testing loading techniques in NOSQL databases. To help investigate different loading strategies in different Graph database technologies, we have decided to model the relationships of the ever popular SportsBall teams.
 
+SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers competitive advantage through continuous excitement delivery at a speed that matters.
+
+> SportsBall sanctioning bodies are organized across 20 international regions.
+>> Each region sanctions 150-200 SportsBall leagues.
+>>> Each league is made up of 400 teams.
+>>>> And Each team has 400-500 rabbid followers.
+
+
 How to use
 ----------
 To run the test project either run the Spring Boot application from the command line or from your IDE of choice.

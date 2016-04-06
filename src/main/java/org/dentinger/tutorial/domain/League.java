@@ -70,6 +70,10 @@ public class League {
     venues = new HashSet<>();
     members = new HashSet<>();
   }
+  public League(Long id){
+    this();
+    this.id = id;
+  }
   public League(Long id, Long region, String name) {
     this();
     this.id = id;
