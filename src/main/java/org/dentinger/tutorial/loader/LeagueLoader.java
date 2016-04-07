@@ -1,8 +1,13 @@
 package org.dentinger.tutorial.loader;
 
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.LeagueClient;
@@ -15,6 +20,7 @@ import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
@@ -33,14 +39,13 @@ public class LeagueLoader {
           + "   merge (r:Region {id: region.id})"
           + "    merge (l:League {id: league.id})"
           + "     on create set l.name = league.name "
-          + "     on match set l.name = league.name "
           + "    merge (r)-[:SANCTIONS]-(l)";
 
   @Autowired
   public LeagueLoader(Neo4jProperties neo4jProperties,
                       SessionFactory sessionFactory,
                       RegionClient regionClient,
-                      LeagueClient leagueClient) {
+                      LeagueClient leagueClient){
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.regionClient = regionClient;
@@ -57,18 +62,18 @@ public class LeagueLoader {
     regions.stream()
         .forEach(region -> {
           List<League> leagues = leagueClient.getLeagues(region);
-
-          logger.info("About to load {} leagues for region({})",leagues.size(),region.getId());
+          logger.info("About to load {} leagues for region({})", leagues.size(), region.getId());
           Map<String, Object> map = new HashMap<String, Object>();
           map.put("json", leagues);
           try {
             neo4jTemplate.execute(MERGE_LEAGUES, map);
-            recordsWritten.incrementAndGet();
+            recordsWritten.addAndGet(leagues.size());
           } catch (Exception e) {
-            aeLogger.error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
+            aeLogger
+                .error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
           }
         });
-    logger.info("Loading of {} Leagues complete: {}ms",recordsWritten.get(), System.currentTimeMillis()-start);
+    logger.info("Loading of {} Leagues complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
@@ -76,5 +81,13 @@ public class LeagueLoader {
         neo4jProperties.getUsername(), neo4jProperties.getPassword());
 
     return new Neo4jTemplate(session);
+  }
+
+  private ExecutorService getExecutorService(int numThreads) {
+    final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("leagueLoader-%d")
+        .setDaemon(true)
+        .build();
+    return Executors.newFixedThreadPool(numThreads, threadFactory);
   }
 }

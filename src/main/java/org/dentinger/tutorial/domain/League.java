@@ -74,16 +74,19 @@ public class League {
     this();
     this.id = id;
   }
-  public League(Long id, Long region, String name) {
+  public League(Long id, String name){
     this();
     this.id = id;
     this.name = name;
-    regions.add(new Region(region) );
   }
-  public League(Long id, Region region, String name) {
-    this();
-    this.id = id;
-    this.name = name;
+
+  public void addMember(Team team){
+    members.add(team);
+  }
+  public void addVenue(Gym gym){
+    venues.add(gym);
+  }
+  public void addRegion(Region region){
     regions.add(region);
   }
 }

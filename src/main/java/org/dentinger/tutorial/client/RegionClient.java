@@ -15,7 +15,7 @@ public class RegionClient {
 
   @Autowired
   public RegionClient(Environment environment) {
-    numRegions = Integer.valueOf(environment.getRequiredProperty("region.count"));
+    numRegions = Integer.valueOf(environment.getRequiredProperty("regions.count"));
   }
 
   public List<Region> getRegions() {
@@ -23,7 +23,7 @@ public class RegionClient {
     LongStream.range(0, numRegions)
         .forEach(i -> {
           Long regionId = i+1;
-          regions.add(new Region(regionId, "Region" + regionId));
+          regions.add(new Region(regionId, "Region-" + regionId));
         });
     return regions;
   }

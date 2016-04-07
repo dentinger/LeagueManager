@@ -5,15 +5,17 @@ neo4j:
   packages:
     - org.dentinger.tutorial.domain
 
-region:
+regions:
   count: 20
-leagues:
-  perRegion:
-    count: 150
 venues:
   count: 100
   count.maxPerLeague: 20
-
+leagues:
+  loading.threads: 5
+  count: 3000
+  minRegionAffiliations: 1
+  maxRegionAffiliations: 3
 teams:
-  perLeague.count: 400
+  count: 100000
+  maxLeagueMemberships: 5
 

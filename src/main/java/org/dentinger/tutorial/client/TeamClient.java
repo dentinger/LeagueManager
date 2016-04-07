@@ -14,7 +14,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TeamClient {
   List<Team> teams;
-  private int perLeague;
+  private int count;
+  private int maxLeagueMemberships;
 
   private String[] adjs = new String[] {
       "Fast", "Big", "Mighty", "Super", "Shining", "Cold Hearted"
@@ -25,18 +26,19 @@ public class TeamClient {
 
   @Autowired
   public TeamClient(Environment environment) {
-    perLeague = Integer.valueOf(environment.getRequiredProperty("teams.perLeague.count"));
+    count = Integer.valueOf(environment.getRequiredProperty("teams.count"));
+    maxLeagueMemberships = Integer.valueOf(environment.getRequiredProperty("teams.maxLeagueMemberships"));
   }
 
   public List<Team> getTeams(League league) {
     Random rand = new Random(System.currentTimeMillis());
     List<Team> teams = new ArrayList<>();
-    Long teamIdSeed = league.getId() * perLeague;
-    LongStream.range(0, perLeague)
-        .forEach(i -> {
-          Long teamId = (league.getId() * perLeague) + i;
-          teams.add(new Team(teamId, generateName(rand, teamId), league.getId()));
-        });
+//    Long teamIdSeed = league.getId() * perLeague;
+//    LongStream.range(0, perLeague)
+//        .forEach(i -> {
+//          Long teamId = (league.getId() * perLeague) + i;
+//          teams.add(new Team(teamId, generateName(rand, teamId), league.getId()));
+//        });
     return teams;
   }
 
