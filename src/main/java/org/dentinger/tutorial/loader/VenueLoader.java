@@ -1,6 +1,8 @@
 package org.dentinger.tutorial.loader;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.LeagueClient;
@@ -27,7 +29,7 @@ public class VenueLoader {
   private RegionClient regionClient;
   private final AtomicLong recordsWritten = new AtomicLong(0);
 
-  private String MERGE_VENUES=
+  private String MERGE_VENUES =
       "unwind {json} as league "
           + "unwind league.venues as venue "
           + "   merge (v:Venue {id: venue.id})"
@@ -51,6 +53,7 @@ public class VenueLoader {
   }
 
   public void loadVenues() {
+    Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
     venueClient.getVenues();
 
     List<Region> regions = regionClient.getRegions();
@@ -60,14 +63,27 @@ public class VenueLoader {
         region -> {
           leagueClient.getLeagues(region).stream().forEach(league -> {
             List<Gym> venuesForLeague = venueClient.getVenuesForLeague(league);
-            logger.info("Going to load {} venues for league {}",venuesForLeague.size(), league.getId());
+            logger.info("Going to load {} venues for league {}", venuesForLeague.size(),
+                league.getId());
             //TODO insert into NEO
             recordsWritten.incrementAndGet();
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("json", venuesForLeague);
+            logger.info("About to load {} venues for league {}", venuesForLeague.size(),
+                league.getId());
+            try {
+              neo4jTemplate.execute(MERGE_VENUES, map);
+            } catch (Exception e) {
+              logger.error("Unable to update graph, regionId={}, leagueCount={}", region.getId(),
+                  league.getId(), e);
+            }
+
           });
         }
 
     );
-    logger.info("Loading of {} Venues complete: {}ms",recordsWritten.get(), System.currentTimeMillis()-start);
+    logger.info("Loading of {} Venues complete: {}ms", recordsWritten.get(),
+        System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
