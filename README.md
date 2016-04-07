@@ -23,6 +23,8 @@ SportsBall teams and their Leagues will be:
  * Leagues contain Teams and Gyms and are part of a Region
  * Regions contain one or more Leagues
 
+ ![Leagure Manager Model](./docs/LeagueManagerModel.png)
+
 SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers competitive advantage through continuous excitement delivery at a speed that matters.
 
 > SportsBall sanctioning bodies are organized across 20 international regions.
