@@ -19,16 +19,15 @@ public class Team {
   @Relationship(type = "MEMBER_OF")
   private Set<League> leagues;
 
-  public Team(){
+  public Team() {
     this.roster = new HashSet<>();
     this.leagues = new HashSet<>();
   }
 
-  public Team(Long teamId, String teamName, Long leagueId){
+  public Team(Long teamId, String teamName) {
     this();
     this.id = teamId;
     this.name = teamName;
-    this.leagues.add(new League(leagueId));
   }
 
   public Long getId() {
@@ -61,6 +60,14 @@ public class Team {
 
   public void setLeagues(Set<League> leagues) {
     this.leagues = leagues;
+  }
+
+  public void addPerson(Person person) {
+    roster.add(person);
+  }
+
+  public void addLeague(League league) {
+    leagues.add(league);
   }
 
   @Override public String toString() {

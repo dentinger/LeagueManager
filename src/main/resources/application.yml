@@ -17,5 +17,6 @@ leagues:
   maxRegionAffiliations: 3
 teams:
   count: 100000
+  minLeagueMemberships: 1
   maxLeagueMemberships: 5
 
