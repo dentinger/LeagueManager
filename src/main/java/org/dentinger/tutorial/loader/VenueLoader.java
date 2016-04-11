@@ -1,8 +1,10 @@
 package org.dentinger.tutorial.loader;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.client.LeagueClient;
@@ -68,7 +70,8 @@ public class VenueLoader {
             //TODO insert into NEO
             recordsWritten.incrementAndGet();
             Map<String, Object> map = new HashMap<String, Object>();
-            map.put("json", venuesForLeague);
+            league.setVenues(new HashSet<>(venuesForLeague));
+            map.put("json", league);
             logger.info("About to load {} venues for league {}", venuesForLeague.size(),
                 league.getId());
             try {
