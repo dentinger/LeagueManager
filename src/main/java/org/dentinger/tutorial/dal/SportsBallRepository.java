@@ -1,7 +1,6 @@
 package org.dentinger.tutorial.dal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,19 +12,22 @@ import java.util.stream.Stream;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class LeagueRepository {
+public class SportsBallRepository {
+  private static final Logger logger = LoggerFactory.getLogger(SportsBallRepository.class);
   private Environment environment;
   private List<Region> regionList;
   private Map<Long, List<League>> leagueMap;
   private Map<Long, List<Team>> teamMap;
 
   @Autowired
-  public LeagueRepository(Environment environment) {
+  public SportsBallRepository(Environment environment) {
     this.environment = environment;
     init();
   }
@@ -35,7 +37,7 @@ public class LeagueRepository {
   }
 
   public List<League> getLeagues() {
-    return leagueMap.values().stream().flatMap(l -> l.stream()).collect(Collectors.toList());
+    return leagueMap.values().stream().flatMap(l -> l.stream()).distinct().collect(Collectors.toList());
   }
 
   public List<League> getLeagues(Region region) {
@@ -43,7 +45,7 @@ public class LeagueRepository {
   }
 
   public List<Team> getTeams() {
-    return teamMap.values().stream().flatMap(l -> l.stream()).collect(Collectors.toList());
+    return teamMap.values().stream().flatMap(l -> l.stream()).distinct().collect(Collectors.toList());
   }
 
   public List<Team> getTeams(League league) {
@@ -75,6 +77,7 @@ public class LeagueRepository {
           League league = new League(id, "League-" + id);
           getParentOffsets(regionList.size(), minRegionAffiliations, maxRegionAffiliations)
               .forEach(x -> {
+                // logger.info("Adding league({}) to region({})",league.getId(),x);
                 Long regionId = regionList.get(x.intValue()).getId();
                 List<League> leagues = leagueMap.get(regionId);
                 if( leagues == null){
@@ -85,6 +88,7 @@ public class LeagueRepository {
                 league.addRegion(regionList.get(x.intValue()));
               });
         });
+    // logger.info("leagueCount={}",leagueMap.values().stream().flatMap(l -> l.stream()).count());
   }
 
   private void generateTeams() {

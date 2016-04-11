@@ -2,23 +2,22 @@ package org.dentinger.tutorial;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
-import org.dentinger.tutorial.dal.LeagueRepository;
+import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
+
 import static org.mockito.MockitoAnnotations.initMocks;
-import org.springframework.core.env.Environment;
+
 import org.springframework.mock.env.MockEnvironment;
-import org.springframework.test.context.ActiveProfiles;
+
 import static org.junit.Assert.*;
 
-public class LeagueRepositoryTest {
+public class SportsBallRepositoryTest {
   MockEnvironment mockEnvironment = new MockEnvironment();
-  private LeagueRepository sut;
+  private SportsBallRepository sut;
   private String regionsCount = "20";
   private String leaguesCount = "3000";
   private String minRegionAffiliations = "1";
@@ -38,17 +37,17 @@ public class LeagueRepositoryTest {
     mockEnvironment.setProperty("teams.minLeagueMemberships",minLeagueMemberships);
     mockEnvironment.setProperty("teams.maxLeagueMemberships",maxLeagueMemberships);
 
-    sut = new LeagueRepository(mockEnvironment);
+    sut = new SportsBallRepository(mockEnvironment);
   }
 
   @Test
   public void test_getRegions() {
-    assertEquals(sut.getRegions().size(), Integer.valueOf(regionsCount).intValue());
+    assertEquals(Integer.valueOf(regionsCount).intValue(), sut.getRegions().size());
   }
 
   @Test
   public void test_getAllLeagues() {
-    assertEquals(sut.getLeagues().size(), Integer.valueOf(leaguesCount).intValue());
+    assertEquals(Integer.valueOf(leaguesCount).intValue(), sut.getLeagues().size());
   }
 
   @Test
@@ -65,7 +64,7 @@ public class LeagueRepositoryTest {
 
   @Test
   public void test_getAllTeams() {
-    assertEquals(sut.getTeams().size(), Integer.valueOf(teamsCount).intValue());
+    assertEquals(Integer.valueOf(teamsCount).intValue(), sut.getTeams().size());
   }
 
   @Test

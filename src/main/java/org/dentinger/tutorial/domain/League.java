@@ -38,14 +38,6 @@ public class League {
     this.members = members;
   }
 
-  public Set<Gym> getVenues() {
-    return venues;
-  }
-
-  public void setVenues(Set<Gym> venues) {
-    this.venues = venues;
-  }
-
   public Set<Region> getRegions() {
     return regions;
   }
@@ -57,9 +49,6 @@ public class League {
   @Relationship(type = "MEMBER_OF", direction = Relationship.UNDIRECTED)
   private Set<Team> members;
 
-  @Relationship(type = "USES")
-  private Set<Gym> venues;
-
   @Relationship(type = "UNDER_A")
   private Set<Region> regions;
 
@@ -67,7 +56,6 @@ public class League {
     super();
 
     regions = new HashSet<>();
-    venues = new HashSet<>();
     members = new HashSet<>();
   }
   public League(Long id){
@@ -82,9 +70,6 @@ public class League {
 
   public void addMember(Team team){
     members.add(team);
-  }
-  public void addVenue(Gym gym){
-    venues.add(gym);
   }
   public void addRegion(Region region){
     regions.add(region);

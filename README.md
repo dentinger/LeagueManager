@@ -18,20 +18,12 @@ to model the relationships of the ever popular SportsBall teams.  The data model
 SportsBall teams and their Leagues will be:
 
  * People (Types: Player, Coach, Fan) are associated with one or more Teams
- * Teams are play in one or more Leagues
- * Gyms are associated with one or more Leagues
- * Leagues contain Teams and Gyms and are part of a Region
+ * Teams play in one or more Leagues
  * Regions contain one or more Leagues
 
  ![Leagure Manager Model](./docs/LeagueManagerModel.png)
 
 SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers competitive advantage through continuous excitement delivery at a speed that matters.
-
-> SportsBall sanctioning bodies are organized across 20 international regions.
->> Each region sanctions 150-200 SportsBall leagues.
->>> Each league is made up of 400 teams.
->>>> And Each team has 400-500 rabbid followers.
-
 
 How to use
 ----------

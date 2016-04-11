@@ -7,9 +7,6 @@ neo4j:
 
 regions:
   count: 20
-venues:
-  count: 100
-  count.maxPerLeague: 20
 leagues:
   loading.threads: 5
   count: 3000

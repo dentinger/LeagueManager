@@ -10,8 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
-import org.dentinger.tutorial.client.LeagueClient;
-import org.dentinger.tutorial.client.RegionClient;
+import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
@@ -29,8 +28,7 @@ public class LeagueLoader {
   private static Logger logger = LoggerFactory.getLogger(LeagueLoader.class);
   private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
-  private RegionClient regionClient;
-  private LeagueClient leagueClient;
+  private SportsBallRepository repo;
   private final AtomicLong recordsWritten = new AtomicLong(0);
 
   private String MERGE_LEAGUES =
@@ -44,36 +42,36 @@ public class LeagueLoader {
   @Autowired
   public LeagueLoader(Neo4jProperties neo4jProperties,
                       SessionFactory sessionFactory,
-                      RegionClient regionClient,
-                      LeagueClient leagueClient){
+                      SportsBallRepository repo){
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
-    this.regionClient = regionClient;
-    this.leagueClient = leagueClient;
+    this.repo = repo;
   }
 
   public void loadLeagues() {
     Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    List<Region> regions = regionClient.getRegions();
+    List<Region> regions = repo.getRegions();
 
     recordsWritten.set(0);
     long start = System.currentTimeMillis();
     regions.stream()
         .forEach(region -> {
-          List<League> leagues = leagueClient.getLeagues(region);
-          logger.info("About to load {} leagues for region({})", leagues.size(), region.getId());
-          Map<String, Object> map = new HashMap<String, Object>();
-          map.put("json", leagues);
-          try {
-            neo4jTemplate.execute(MERGE_LEAGUES, map);
-            recordsWritten.addAndGet(leagues.size());
-          } catch (Exception e) {
-            aeLogger
-                .error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
+          List<League> leagues = repo.getLeagues(region);
+          if( leagues != null ) {
+            logger.info("About to load {} leagues for region({})", leagues.size(), region.getId());
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("json", leagues);
+            try {
+              neo4jTemplate.execute(MERGE_LEAGUES, map);
+              recordsWritten.addAndGet(leagues.size());
+            } catch (Exception e) {
+              aeLogger
+                  .error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
+            }
           }
         });
-    logger.info("Loading of {} Leagues complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
+    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
-import org.dentinger.tutorial.client.RegionClient;
+import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.neo4j.ogm.session.Session;
@@ -20,7 +20,7 @@ public class RegionLoader {
   private static Logger logger = LoggerFactory.getLogger(RegionLoader.class);
   private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
-  private RegionClient regionClient;
+  private SportsBallRepository repo;
 
   private String MERGE_REGIONS =
       "unwind {json} as q " +
@@ -29,16 +29,16 @@ public class RegionLoader {
           "  on match set r.name = q.name";
 
   @Autowired
-  public RegionLoader(Neo4jProperties neo4jProperties, SessionFactory sessionFactory, RegionClient regionClient) {
+  public RegionLoader(Neo4jProperties neo4jProperties, SessionFactory sessionFactory, SportsBallRepository repo) {
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
-    this.regionClient = regionClient;
+    this.repo = repo;
   }
 
   public void loadRegions() {
     Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    List<Region> regions = regionClient.getRegions();
+    List<Region> regions = repo.getRegions();
     logger.info("About to load {} regions", regions.size());
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", regions);
@@ -48,7 +48,7 @@ public class RegionLoader {
     } catch (Exception e) {
       aeLogger.error("Unable to update graph, regionCount={}", regions.size(), e);
     }
-    logger.info("Loading of {} Regions complete: {}ms", regions.size(), System.currentTimeMillis() - start);
+    logger.info("Processing of {} Regional relationships complete: {}ms", regions.size(), System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
