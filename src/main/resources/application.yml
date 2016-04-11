@@ -7,6 +7,7 @@ neo4j:
 
 regions:
   count: 20
+  loaderThreads: 5
 leagues:
   loading.threads: 5
   count: 3000
