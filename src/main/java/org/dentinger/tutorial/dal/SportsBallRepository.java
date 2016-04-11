@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
+import org.dentinger.tutorial.domain.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,8 @@ public class SportsBallRepository {
   private static final Logger logger = LoggerFactory.getLogger(SportsBallRepository.class);
   private Environment environment;
   private List<Region> regionList;
-  private Map<Long, List<League>> leagueMap;
-  private Map<Long, List<Team>> teamMap;
+  private Map<Long, List<League>> leagueMap; // key is region id
+  private Map<Long, List<Team>> teamMap; // key is league id
 
   @Autowired
   public SportsBallRepository(Environment environment) {
@@ -53,9 +54,12 @@ public class SportsBallRepository {
   }
 
   private void init() {
+    long start = System.currentTimeMillis();
+    logger.info("Initializing SportsBall Repo ...");
     generateRegions();
     generateLeagues();
-    generateTeams();
+    generateTeams(); // Also generates persons
+    logger.info("Initialization complete: {}ms",System.currentTimeMillis()-start);
   }
 
   private void generateRegions() {
@@ -95,6 +99,8 @@ public class SportsBallRepository {
     int teamCount = Integer.valueOf(environment.getRequiredProperty("teams.count"));
     int minLeagueMemberships = Integer.valueOf(environment.getRequiredProperty("teams.minLeagueMemberships"));
     int maxLeagueMemberships = Integer.valueOf(environment.getRequiredProperty("teams.maxLeagueMemberships"));
+    int minPlayersPerTeam = Integer.valueOf(environment.getRequiredProperty("teams.minPlayersPerTeam"));
+    int maxPlayersPerTeam = Integer.valueOf(environment.getRequiredProperty("teams.maxPlayersPerTeam"));
     teamMap = new HashMap<>();
     List<League> leagueList = getLeagues();
     Random rand = new Random(System.currentTimeMillis());
@@ -112,13 +118,26 @@ public class SportsBallRepository {
                 teams.add(team);
                 team.addLeague(leagueList.get(x.intValue()));
               });
+          generatePlayers(team, minPlayersPerTeam, maxPlayersPerTeam);
+        });
+  }
+
+  private void generatePlayers(Team team, int minPlayers, int maxPlayers) {
+    int playerCount = (minPlayers == maxPlayers)?maxPlayers :
+      new Random(System.currentTimeMillis()).ints(minPlayers, maxPlayers).limit(1).findFirst().getAsInt();
+    LongStream.range(1, playerCount + 1)
+        .forEach(id -> {
+          Person person = new Person(id, "Player-"+id);
+          person.addTeam(team);
+          team.addPerson(person);
         });
   }
 
   private Stream<Long> getParentOffsets(long range, int minReturned, int maxReturned) {
     Random r = new Random(System.currentTimeMillis());
-    OptionalInt returnCount = r.ints(minReturned, maxReturned).limit(1).findFirst();
-    return r.longs(0, range).limit(returnCount.getAsInt()).distinct().boxed();
+    int returnCount = (minReturned == maxReturned)? maxReturned :
+        r.ints(minReturned, maxReturned).limit(1).findFirst().getAsInt();
+    return r.longs(0, range).limit(returnCount).distinct().boxed();
   }
 
   private String[] adjs = new String[] {

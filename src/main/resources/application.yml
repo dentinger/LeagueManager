@@ -16,4 +16,6 @@ teams:
   count: 100000
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
+  minPlayersPerTeam: 8
+  maxPlayersPerTeam: 12
 

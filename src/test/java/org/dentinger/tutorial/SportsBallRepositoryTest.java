@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
+import org.dentinger.tutorial.domain.Person;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
 import org.junit.Before;
@@ -25,6 +26,8 @@ public class SportsBallRepositoryTest {
   private String teamsCount = "100000";
   private String minLeagueMemberships = "1";
   private String maxLeagueMemberships = "5";
+  private String minPlayersPerTeam = "8";
+  private String maxPlayersPerTeam = "12";
 
   @Before
   public void setup() {
@@ -36,6 +39,8 @@ public class SportsBallRepositoryTest {
     mockEnvironment.setProperty("teams.count",teamsCount);
     mockEnvironment.setProperty("teams.minLeagueMemberships",minLeagueMemberships);
     mockEnvironment.setProperty("teams.maxLeagueMemberships",maxLeagueMemberships);
+    mockEnvironment.setProperty("teams.minPlayersPerTeam",minPlayersPerTeam);
+    mockEnvironment.setProperty("teams.maxPlayersPerTeam",maxPlayersPerTeam);
 
     sut = new SportsBallRepository(mockEnvironment);
   }
@@ -76,6 +81,18 @@ public class SportsBallRepositoryTest {
         .forEach(team -> {
           Set<League> leagues = team.getLeagues();
           assertTrue(minLeagues <= leagues.size() && leagues.size() <= maxLeagues);
+        });
+  }
+
+  @Test
+  public void test_getPlayersPerTeam() {
+    List<Team> teamList = sut.getTeams();
+    int minPlayers = Integer.valueOf(minPlayersPerTeam);
+    int maxPlayers = Integer.valueOf(maxPlayersPerTeam);
+    teamList.stream()
+        .forEach(team -> {
+          Set<Person> players = team.getRoster();
+          assertTrue(minPlayers <= players.size() && players.size() <= maxPlayers);
         });
   }
 }
