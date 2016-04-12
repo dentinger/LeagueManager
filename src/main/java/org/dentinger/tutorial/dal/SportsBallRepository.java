@@ -26,6 +26,7 @@ public class SportsBallRepository {
   private List<Region> regionList;
   private Map<Long, List<League>> leagueMap; // key is region id
   private Map<Long, List<Team>> teamMap; // key is league id
+  private Map<Long, List<Person>> personMap; // key is team id
 
   @Autowired
   public SportsBallRepository(Environment environment) {
@@ -51,6 +52,14 @@ public class SportsBallRepository {
 
   public List<Team> getTeams(League league) {
     return teamMap.get(league.getId());
+  }
+
+  public List<Person> getPersons() {
+    return personMap.values().stream().flatMap(l -> l.stream()).distinct().collect(Collectors.toList());
+  }
+
+  public List<Person> getPersons(Team team) {
+    return personMap.get(team.getId());
   }
 
   private void init() {
@@ -102,6 +111,7 @@ public class SportsBallRepository {
     int minPlayersPerTeam = Integer.valueOf(environment.getRequiredProperty("teams.minPlayersPerTeam"));
     int maxPlayersPerTeam = Integer.valueOf(environment.getRequiredProperty("teams.maxPlayersPerTeam"));
     teamMap = new HashMap<>();
+    personMap = new HashMap<>();
     List<League> leagueList = getLeagues();
     Random rand = new Random(System.currentTimeMillis());
     LongStream.range(1, teamCount + 1)
@@ -128,8 +138,13 @@ public class SportsBallRepository {
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
           Person person = new Person(id, "Player-"+id);
+          List<Person> persons = personMap.get(team.getId());
+          if( persons == null){
+            persons = new ArrayList<Person>();
+            personMap.put(team.getId(),persons);
+          }
+          persons.add(person);
           person.addTeam(team);
-          team.addPerson(person);
         });
   }
 

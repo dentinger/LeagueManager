@@ -39,7 +39,7 @@ public class LeagueLoader {
           + "   merge (r:Region {id: region.id})"
           + "    merge (l:League {id: league.id})"
           + "     on create set l.name = league.name "
-          + "    merge (r)-[:SANCTIONS]-(l)";
+          + "    merge (r)-[:SANCTION]-(l)";
 
   @Autowired
   public LeagueLoader(Neo4jProperties neo4jProperties,

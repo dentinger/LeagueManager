@@ -85,14 +85,23 @@ public class SportsBallRepositoryTest {
   }
 
   @Test
-  public void test_getPlayersPerTeam() {
+  public void test_getAllPersons() {
     List<Team> teamList = sut.getTeams();
-    int minPlayers = Integer.valueOf(minPlayersPerTeam);
-    int maxPlayers = Integer.valueOf(maxPlayersPerTeam);
+    Long min = Long.valueOf(minPlayersPerTeam).longValue();
+    Long max = Long.valueOf(maxPlayersPerTeam).longValue();
+    int playerCount = sut.getPersons().size();
+    assertTrue((min * teamList.size()) <= playerCount && (max * teamList.size()) >= playerCount);
+  }
+
+  @Test
+  public void test_verifyPersonsOnTeams() {
+    List<Team> teamList = sut.getTeams();
+    Long min = Long.valueOf(minPlayersPerTeam).longValue();
+    Long max = Long.valueOf(maxPlayersPerTeam).longValue();
     teamList.stream()
         .forEach(team -> {
-          Set<Person> players = team.getRoster();
-          assertTrue(minPlayers <= players.size() && players.size() <= maxPlayers);
+          List<Person> persons = sut.getPersons(team);
+          assertTrue(min <= persons.size() && persons.size() <= max);
         });
   }
 }
