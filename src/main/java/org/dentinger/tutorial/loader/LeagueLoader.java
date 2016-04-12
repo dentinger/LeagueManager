@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
@@ -29,6 +30,7 @@ public class LeagueLoader {
   private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
+  private int numThreads;
   private final AtomicLong recordsWritten = new AtomicLong(0);
 
   private String MERGE_LEAGUES =
@@ -42,36 +44,51 @@ public class LeagueLoader {
   @Autowired
   public LeagueLoader(Neo4jProperties neo4jProperties,
                       SessionFactory sessionFactory,
-                      SportsBallRepository repo){
+                      SportsBallRepository repo,
+                      Environment env){
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
+    this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads","1"));
   }
 
   public void loadLeagues() {
-    Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
-
+    logger.info("About to load Leagues for {} regions using {} threads", regions.size(), numThreads);
     recordsWritten.set(0);
+    ExecutorService executorService = getExecutorService(numThreads);
+    int subListSize = (int) Math.floor(regions.size() / numThreads);
     long start = System.currentTimeMillis();
-    regions.stream()
-        .forEach(region -> {
-          List<League> leagues = repo.getLeagues(region);
-          if( leagues != null ) {
-            logger.info("About to load {} leagues for region({})", leagues.size(), region.getId());
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("json", leagues);
-            try {
-              neo4jTemplate.execute(MERGE_LEAGUES, map);
-              recordsWritten.addAndGet(leagues.size());
-            } catch (Exception e) {
-              aeLogger
-                  .error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(), e);
-            }
-          }
-        });
-    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
+    Lists.partition(regions, subListSize).stream().parallel()
+        .forEach((sublist) -> {
+              executorService.submit(() -> {
+                Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
+                sublist.stream().forEach(region -> {
+                  List<League> leagues = repo.getLeagues(region);
+                  if( leagues != null ) {
+                    logger.info("About to load {} leagues for region({})", leagues.size(), region.getId());
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("json", leagues);
+                    try {
+                      neo4jTemplate.execute(MERGE_LEAGUES, map);
+                      recordsWritten.addAndGet(leagues.size());
+                    } catch (Exception e) {
+                      aeLogger
+                          .error("Unable to update graph, regionId={}, leagueCount={}", region.getId(), leagues.size(),
+                              e);
+                    }
+                  }
+                });
+              });
+            });
+      executorService.shutdown();
+      try {
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+      }catch(Exception e){
+        logger.error("executorService exception: ",e);
+      }
+     logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {

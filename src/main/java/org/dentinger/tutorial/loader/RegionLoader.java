@@ -43,16 +43,16 @@ public class RegionLoader {
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
-    this.numThreads = Integer.valueOf(env.getProperty("regions.loaderThreads","1"));
+    this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads","1"));
   }
 
   public void loadRegions() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
     logger.info("About to load {} regions using {} threads", regions.size(), numThreads);
+    recordsWritten.set(0);
     ExecutorService executorService = getExecutorService(numThreads);
     int subListSize = (int) Math.floor(regions.size() / numThreads);
-
     long start = System.currentTimeMillis();
     Lists.partition(regions, subListSize).stream().parallel()
         .forEach((sublist) -> {
@@ -86,7 +86,7 @@ public class RegionLoader {
 
   private ExecutorService getExecutorService(int numThreads) {
     final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-        .setNameFormat("loader-%d")
+        .setNameFormat("regionLoader-%d")
         .setDaemon(true)
         .build();
     return Executors.newFixedThreadPool(numThreads, threadFactory);
