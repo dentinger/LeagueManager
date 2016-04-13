@@ -6,16 +6,16 @@ neo4j:
     - org.dentinger.tutorial.domain
 
 regions:
-  count: 20
+  count: 10
   loading.threads: 5
 leagues:
-  loading.threads: 5
+  loading.threads: 10
   count: 3000
   minRegionAffiliations: 1
   maxRegionAffiliations: 3
 teams:
   count: 100000
-  loading.threads: 20
+  loading.threads: 30
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8

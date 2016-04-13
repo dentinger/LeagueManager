@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
@@ -81,6 +82,12 @@ public class TeamLoader {
                 });
               });
             });
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+    }catch(Exception e){
+      logger.error("executorService exception: ",e);
+    }
     logger.info("Processing of {} Team relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
   }
 

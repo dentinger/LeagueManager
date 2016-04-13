@@ -1,16 +1,16 @@
 # LeagueManager
 Small project to test different graph databases and different strategies of graph database bulk loading.
 
-Prerequisites
------------------
+## Prerequisites
+
 This project requires the following:
 
 1. Java 8
 2. Gradle
 3. Local install of Neo4J
 
-Overview
---------
+## Overview
+
 Ingesting large amounts of data in any database is difficult and there are few good
 resources for testing loading techniques in NOSQL databases. To help investigate
 different loading strategies in different Graph database technologies, we have decided
@@ -25,8 +25,19 @@ SportsBall teams and their Leagues will be:
 
 SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers competitive advantage through continuous excitement delivery at a speed that matters.
 
-How to use
-----------
+## How to use
+
+There are a handful of properties that drive the loading of data in LeagueManager.  All of these can be set/updated in the application.yml file.
+For a full set of properties currently set look in ![application.yml](./src/main/resources/application.yml). There are a few properties that have a more impact
+on the behavior of the app.  These include:
+
+* regions.loading.threads - how many threads will load regions into database.
+* leagues.loading.threads - how many threads will load leagues into database.
+* teams.loading.threads - how many threads will load teams into database.
+* neo4j.url - url to the neo4j install
+* neo4j.username - neo4j user
+* neo4j.password - password for neo4j.user
+
 To run the test project either run the Spring Boot application from the command line or from your IDE of choice.
 
 |Functionality |JVM parameter |Description|
@@ -39,5 +50,6 @@ Sample usage: *java -jar leagueManager-0.0.1-RELEASE.jar loadLeagues loadRegions
 
 This will load the leagues and regions into the application.
 
+[Outstanding Concerns](./docs/outstanding_concerns.md)
 
 [Project work that is still needed](./docs/TODOs.md)
