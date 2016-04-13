@@ -11,8 +11,26 @@ public class League {
 
   @GraphId
   private Long id;
-
   private String name;
+
+  @Relationship(type = "SANCTION")
+  private Set<Region> regions;
+
+  public League() {
+    super();
+    regions = new HashSet<>();
+  }
+
+  public League(Long id) {
+    this();
+    this.id = id;
+  }
+
+  public League(Long id, String name) {
+    this();
+    this.id = id;
+    this.name = name;
+  }
 
   public Long getId() {
     return id;
@@ -30,22 +48,6 @@ public class League {
     this.name = name;
   }
 
-  public Set<Team> getMembers() {
-    return members;
-  }
-
-  public void setMembers(Set<Team> members) {
-    this.members = members;
-  }
-
-  public Set<Gym> getVenues() {
-    return venues;
-  }
-
-  public void setVenues(Set<Gym> venues) {
-    this.venues = venues;
-  }
-
   public Set<Region> getRegions() {
     return regions;
   }
@@ -54,39 +56,7 @@ public class League {
     this.regions = regions;
   }
 
-  @Relationship(type = "MEMBER_OF", direction = Relationship.UNDIRECTED)
-  private Set<Team> members;
-
-  @Relationship(type = "USES")
-  private Set<Gym> venues;
-
-  @Relationship(type = "UNDER_A")
-  private Set<Region> regions;
-
-  public League() {
-    super();
-
-    regions = new HashSet<>();
-    venues = new HashSet<>();
-    members = new HashSet<>();
-  }
-  public League(Long id){
-    this();
-    this.id = id;
-  }
-  public League(Long id, String name){
-    this();
-    this.id = id;
-    this.name = name;
-  }
-
-  public void addMember(Team team){
-    members.add(team);
-  }
-  public void addVenue(Gym gym){
-    venues.add(gym);
-  }
-  public void addRegion(Region region){
+  public void addRegion(Region region) {
     regions.add(region);
   }
 }

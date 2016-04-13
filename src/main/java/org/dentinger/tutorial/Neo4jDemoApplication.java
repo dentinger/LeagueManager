@@ -5,7 +5,6 @@ import java.util.List;
 import org.dentinger.tutorial.loader.LeagueLoader;
 import org.dentinger.tutorial.loader.RegionLoader;
 import org.dentinger.tutorial.loader.TeamLoader;
-import org.dentinger.tutorial.loader.VenueLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -26,7 +25,6 @@ public class Neo4jDemoApplication {
 
   @Bean CommandLineRunner runLoader(RegionLoader regionLoader,
                                     LeagueLoader leagueLoader,
-                                    VenueLoader venueLoader,
                                     TeamLoader teamLoader) {
     return args -> {
       List<String> list = Arrays.asList(args);
@@ -36,16 +34,12 @@ public class Neo4jDemoApplication {
       if (list.contains("loadLeagues")) {
         leagueLoader.loadLeagues();
       }
-      if(list.contains("loadVenues")) {
-        venueLoader.loadVenues();
-      }
       if(list.contains("loadTeams")) {
         teamLoader.loadTeams();
       }
       if (list.contains("loadAll")) {
         regionLoader.loadRegions();
         leagueLoader.loadLeagues();
-        venueLoader.loadVenues();
         teamLoader.loadTeams();
       }
     };

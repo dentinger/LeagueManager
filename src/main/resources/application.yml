@@ -7,15 +7,17 @@ neo4j:
 
 regions:
   count: 20
-venues:
-  count: 100
-  count.maxPerLeague: 20
-leagues:
   loading.threads: 5
+leagues:
+  loading.threads: 10
   count: 3000
   minRegionAffiliations: 1
   maxRegionAffiliations: 3
 teams:
   count: 100000
+  loading.threads: 20
+  minLeagueMemberships: 1
   maxLeagueMemberships: 5
+  minPlayersPerTeam: 8
+  maxPlayersPerTeam: 12
 

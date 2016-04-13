@@ -13,22 +13,17 @@ public class Team {
 
   private String name;
 
-  @Relationship(type = "PLAYSON", direction = Relationship.UNDIRECTED)
-  private Set<Person> roster;
-
-  @Relationship(type = "MEMBER_OF")
+  @Relationship(type = "MEMBERSHIP")
   private Set<League> leagues;
 
-  public Team(){
-    this.roster = new HashSet<>();
+  public Team() {
     this.leagues = new HashSet<>();
   }
 
-  public Team(Long teamId, String teamName, Long leagueId){
+  public Team(Long teamId, String teamName) {
     this();
     this.id = teamId;
     this.name = teamName;
-    this.leagues.add(new League(leagueId));
   }
 
   public Long getId() {
@@ -47,20 +42,16 @@ public class Team {
     this.name = name;
   }
 
-  public Set<Person> getRoster() {
-    return roster;
-  }
-
-  public void setRoster(Set<Person> roster) {
-    this.roster = roster;
-  }
-
   public Set<League> getLeagues() {
     return leagues;
   }
 
   public void setLeagues(Set<League> leagues) {
     this.leagues = leagues;
+  }
+
+  public void addLeague(League league) {
+    leagues.add(league);
   }
 
   @Override public String toString() {
