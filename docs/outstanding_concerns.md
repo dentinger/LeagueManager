@@ -23,5 +23,6 @@ partially commited state.
 ## General Questions:
 * Detach Delete:  It appears that a similar deadlock is encountered when trying the query below.  Is
 there an appropriate way to do multiple detached deletes at a time?
+
 >match (r:Region) match (l:League) match (t:Team) detach delete r, l, t
 
