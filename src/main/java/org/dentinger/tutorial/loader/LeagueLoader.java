@@ -49,7 +49,7 @@ public class LeagueLoader {
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
-    this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads","1"));
+    this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads","1"));
   }
 
   public void loadLeagues() {

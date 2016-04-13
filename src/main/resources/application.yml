@@ -9,7 +9,7 @@ regions:
   count: 20
   loading.threads: 5
 leagues:
-  loading.threads: 10
+  loading.threads: 5
   count: 3000
   minRegionAffiliations: 1
   maxRegionAffiliations: 3
