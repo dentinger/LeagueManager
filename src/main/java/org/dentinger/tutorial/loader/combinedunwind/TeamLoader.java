@@ -113,7 +113,7 @@ public class TeamLoader {
   public void cleanup() {
     logger.info("Initiate Team Purge");
     getNeo4jTemplate().execute(CLEAN_UP);
-    logger.info("Team Purge Completed");
+    logger.info("Completed Team Purge");
 
   }
 }

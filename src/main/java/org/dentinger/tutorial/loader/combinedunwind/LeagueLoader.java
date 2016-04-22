@@ -117,7 +117,7 @@ public class LeagueLoader {
   public void cleanup() {
     logger.info("Initiate League Purge");
     getNeo4jTemplate().execute(CLEAN_UP);
-    logger.info("League Purge Completed");
+    logger.info("Completed League Purge");
 
   }
 }
