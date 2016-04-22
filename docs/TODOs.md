@@ -6,10 +6,10 @@
   * Delete data from load run and track loading stats
   * run "NodeFirst" loader
   * Show stats for all loaders run.
-   
+
 * Create random generator for
 
-> Person
+  > Person
 
 * Create Neo4j Person Loader using Unwind Cypher
 * Create Neo4j Multi-threaded loader strategy (for all Loaders)
