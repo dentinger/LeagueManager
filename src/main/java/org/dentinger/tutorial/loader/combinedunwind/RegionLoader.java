@@ -96,7 +96,7 @@ public class RegionLoader {
   }
 
   public void cleanup() {
-    logger.info("Intiate Region Purge");
+    logger.info("Initiate Region Purge");
     getNeo4jTemplate().execute(CLEAN_UP);
     logger.info("Region Purge Completed");
 
