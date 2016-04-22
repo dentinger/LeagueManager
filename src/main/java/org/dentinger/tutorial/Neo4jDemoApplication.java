@@ -2,9 +2,9 @@ package org.dentinger.tutorial;
 
 import java.util.Arrays;
 import java.util.List;
-import org.dentinger.tutorial.loader.LeagueLoader;
-import org.dentinger.tutorial.loader.RegionLoader;
-import org.dentinger.tutorial.loader.TeamLoader;
+import org.dentinger.tutorial.loader.combinedunwind.LeagueLoader;
+import org.dentinger.tutorial.loader.combinedunwind.RegionLoader;
+import org.dentinger.tutorial.loader.combinedunwind.TeamLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -41,6 +41,12 @@ public class Neo4jDemoApplication {
         regionLoader.loadRegions();
         leagueLoader.loadLeagues();
         teamLoader.loadTeams();
+      }
+
+      if(list.contains("cleanup")) {
+        regionLoader.cleanup();
+        leagueLoader.cleanup();
+        teamLoader.cleanup();
       }
     };
   }

@@ -1,4 +1,4 @@
-package org.dentinger.tutorial.loader;
+package org.dentinger.tutorial.loader.combinedunwind;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
-import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.neo4j.ogm.session.Session;
@@ -42,6 +41,9 @@ public class TeamLoader {
           + "     on create set t.name = team.name "
           + "    merge (t)-[:MEMBERSHIP]-(l)";
 
+  private String CLEAN_UP =
+      "match (t:Team) detach delete t";
+
   @Autowired
   public TeamLoader(Neo4jProperties neo4jProperties,
                     SessionFactory sessionFactory,
@@ -50,7 +52,7 @@ public class TeamLoader {
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
-    this.numThreads = Integer.valueOf(env.getProperty("teams.loading.threads","1"));
+    this.numThreads = Integer.valueOf(env.getProperty("teams.loading.threads", "1"));
   }
 
   public void loadTeams() {
@@ -64,31 +66,33 @@ public class TeamLoader {
     Lists.partition(leagues, subListSize).stream().parallel()
         .forEach((sublist) -> {
           executorService.submit(() -> {
-                Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
-                sublist.stream().forEach(league -> {
-                  List<Team> teams = repo.getTeams(league);
-                  if( teams != null ) {
-                    logger.info("About to load {} teams for league({})", teams.size(), league.getId());
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("json", teams);
-                    try {
-                      neo4jTemplate.execute(MERGE_TEAMS, map);
-                      recordsWritten.addAndGet(leagues.size());
-                    } catch (Exception e) {
-                      aeLogger
-                          .error("Unable to update graph, leagueId={}, teamCount={}", league.getId(), teams.size(), e);
-                    }
-                  }
-                });
-              });
+            Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
+            sublist.stream().forEach(league -> {
+              List<Team> teams = repo.getTeams(league);
+              if (teams != null) {
+                logger.info("About to load {} teams for league({})", teams.size(), league.getId());
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("json", teams);
+                try {
+                  neo4jTemplate.execute(MERGE_TEAMS, map);
+                  recordsWritten.addAndGet(leagues.size());
+                } catch (Exception e) {
+                  aeLogger
+                      .error("Unable to update graph, leagueId={}, teamCount={}", league.getId(),
+                          teams.size(), e);
+                }
+              }
             });
+          });
+        });
     executorService.shutdown();
     try {
       executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    }catch(Exception e){
-      logger.error("executorService exception: ",e);
+    } catch (Exception e) {
+      logger.error("executorService exception: ", e);
     }
-    logger.info("Processing of {} Team relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
+    logger.info("Processing of {} Team relationships complete: {}ms", recordsWritten.get(),
+        System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
@@ -104,5 +108,12 @@ public class TeamLoader {
         .setDaemon(true)
         .build();
     return Executors.newFixedThreadPool(numThreads, threadFactory);
+  }
+
+  public void cleanup() {
+    logger.info("Intiate Team Purge");
+    getNeo4jTemplate().execute(CLEAN_UP);
+    logger.info("Team Purge Completed");
+
   }
 }

@@ -1,4 +1,4 @@
-package org.dentinger.tutorial.loader;
+package org.dentinger.tutorial.loader.combinedunwind;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -37,6 +37,9 @@ public class RegionLoader {
           "merge (r:Region {id: q.id})" +
           "  on create set r.name = q.name " +
           "  on match set r.name = q.name";
+
+  private String CLEAN_UP =
+      "match (r:Region) detach delete r";
 
   @Autowired
   public RegionLoader(Neo4jProperties neo4jProperties, SessionFactory sessionFactory, SportsBallRepository repo, Environment env) {
@@ -90,5 +93,12 @@ public class RegionLoader {
         .setDaemon(true)
         .build();
     return Executors.newFixedThreadPool(numThreads, threadFactory);
+  }
+
+  public void cleanup() {
+    logger.info("Intiate Region Purge");
+    getNeo4jTemplate().execute(CLEAN_UP);
+    logger.info("Region Purge Completed");
+
   }
 }
