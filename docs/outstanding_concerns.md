@@ -15,10 +15,7 @@ loading multiple leagues in multiple threads a deadlock is encountered because m
 ### Questions to answer:
 
 * Is there a way to get around this issue without slowing down the data loading processing?
-* Is there a limit to how much data that can be passed to a single Unwind statement? (i.e  number
-of json objects passed)
-* If there is a problem encountered during an unwind is everything rolled back or can data be in a
-partially commited state.
+
 
 ## General Questions:
 * Detach Delete:  It appears that a similar deadlock is encountered when trying the query below.  Is
@@ -26,3 +23,13 @@ there an appropriate way to do multiple detached deletes at a time?
 
 >match (r:Region) match (l:League) match (t:Team) detach delete r, l, t
 
+
+# No longer concerns
+
+## Answered Questions
+* Is there a limit to how much data that can be passed to a single Unwind statement? (i.e  number
+of json objects passed)
+    * It is recommened to not pass more than 10k actions into a single UNWIND
+* If there is a problem encountered during an unwind is everything rolled back or can data be in a
+partially commited state.
+    * It is recommended to wrap each UNWIND in a transaction.
