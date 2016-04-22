@@ -15,13 +15,14 @@ loading multiple leagues in multiple threads a deadlock is encountered because m
 ### Questions to answer:
 
 * Is there a way to get around this issue without slowing down the data loading processing?
+
 > Current thoughts are around changing the way nodes and relationships are created in the application.
 First add all nodes.  Then add relationships. To add relationships randomize the creation of relationships
 in threads and assign a random node to each thread. This should minimize the potential of deadlocks or
 limit the length a thread has to wait. The current approach (UNWIND with merges for nodes and relationships)
  currently can have situations where a thread at a higher level in the graph is locking some nodes and there are
   other threads waiting for that single thread to finsih and release the locks.
- 
+
 ## General Questions:
 * Detach Delete:  It appears that a similar deadlock is encountered when trying the query below.  Is
 there an appropriate way to do multiple detached deletes at a time?
