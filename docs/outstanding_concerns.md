@@ -21,7 +21,7 @@ in threads and assign a random node to each thread. This should minimize the pot
 limit the length a thread has to wait. The current approach (UNWIND with merges for nodes and relationships)
  currently can have situations where a thread at a higher level in the graph is locking some nodes and there are
   other threads waiting for that single thread to finsih and release the locks.
-
+ 
 ## General Questions:
 * Detach Delete:  It appears that a similar deadlock is encountered when trying the query below.  Is
 there an appropriate way to do multiple detached deletes at a time?
