@@ -16,7 +16,7 @@ loading multiple leagues in multiple threads a deadlock is encountered because m
 
 * Is there a way to get around this issue without slowing down the data loading processing?
 
-> Current thoughts are around changing the way nodes and relationships are created in the application.
+    > Current thoughts are around changing the way nodes and relationships are created in the application.
 First add all nodes.  Then add relationships. To add relationships randomize the creation of relationships
 in threads and assign a random node to each thread. This should minimize the potential of deadlocks or
 limit the length a thread has to wait. The current approach (UNWIND with merges for nodes and relationships)
