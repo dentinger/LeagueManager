@@ -68,19 +68,7 @@ public class NFLeagueLoader {
     Lists.partition(leagueList, subListSize).stream().parallel()
         .forEach((leagues) -> {
           executorService.submit(() -> {
-            Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
-
-            logger.info("About to load {} leagues ", leagues.size());
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("json", leagues);
-            try {
-              neo4jTemplate.execute(MERGE_LEAGUES_NODE, map);
-              recordsWritten.addAndGet(leagues.size());
-            } catch (Exception e) {
-              aeLogger
-                  .error("Unable to update graph, leagueCount={}",  leagues.size(),
-                      e);
-            }
+            doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_NODE);
 
           });
         });
@@ -105,19 +93,7 @@ public class NFLeagueLoader {
     Lists.partition(leagueList, subListSize).stream().parallel()
         .forEach((leagues) -> {
           executorService.submit(() -> {
-            Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
-
-            logger.info("About to load {} leagues ", leagues.size());
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("json", leagues);
-            try {
-              neo4jTemplate.execute(MERGE_LEAGUES_NODE, map);
-              recordsWritten.addAndGet(leagues.size());
-            } catch (Exception e) {
-              aeLogger
-                  .error("Unable to update graph, leagueCount={}",  leagues.size(),
-                      e);
-            }
+            doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_RELATIONSHIPS);
 
           });
         });
@@ -130,6 +106,25 @@ public class NFLeagueLoader {
     logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
   }
 
+  private void doSubmitableWork(AggregateExceptionLogger aeLogger,
+                                List<League> leagues,
+                                int size,
+                                String cypher) {
+    Neo4jTemplate
+        neo4jTemplate = getNeo4jTemplate();
+
+    logger.info("About to load {} leagues ", size);
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("json", leagues);
+    try {
+      neo4jTemplate.execute(cypher, map);
+      recordsWritten.addAndGet(size);
+    } catch (Exception e) {
+      aeLogger
+          .error("Unable to update graph, leagueCount={}", size,
+              e);
+    }
+  }
 
   private Neo4jTemplate getNeo4jTemplate() {
     Session session = sessionFactory.openSession(neo4jProperties.getUrl(),

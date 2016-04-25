@@ -2,9 +2,8 @@ package org.dentinger.tutorial;
 
 import java.util.Arrays;
 import java.util.List;
-import org.dentinger.tutorial.loader.combinedunwind.LeagueLoader;
-import org.dentinger.tutorial.loader.combinedunwind.RegionLoader;
-import org.dentinger.tutorial.loader.combinedunwind.TeamLoader;
+import org.dentinger.tutorial.service.Neo4jLoaderService;
+import org.dentinger.tutorial.service.NodeFirstNeo4jLoaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -23,30 +22,18 @@ public class Neo4jDemoApplication {
     SpringApplication.run(Neo4jDemoApplication.class, args);
   }
 
-  @Bean CommandLineRunner runLoader(RegionLoader regionLoader,
-                                    LeagueLoader leagueLoader,
-                                    TeamLoader teamLoader) {
+  @Bean CommandLineRunner runLoader(Neo4jLoaderService service,
+                                    NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService) {
     return args -> {
       List<String> list = Arrays.asList(args);
-      if (list.contains("loadRegions")) {
-        regionLoader.loadRegions();
+      if (!list.contains("nodeFirst")) {
+        service.runCombinedUnwindLoader(list);
       }
-      if (list.contains("loadLeagues")) {
-        leagueLoader.loadLeagues();
+      if (list.contains("nodeFirst")) {
+        nodeFirstNeo4jLoaderService.runLoader(list);
       }
-      if(list.contains("loadTeams")) {
-        teamLoader.loadTeams();
-      }
-      if (list.contains("loadAll")) {
-        regionLoader.loadRegions();
-        leagueLoader.loadLeagues();
-        teamLoader.loadTeams();
-      }
-
-      if(list.contains("cleanup")) {
-        regionLoader.cleanup();
-        leagueLoader.cleanup();
-        teamLoader.cleanup();
+      if (list.contains("cleanup")) {
+        service.cleanup();
       }
     };
   }
