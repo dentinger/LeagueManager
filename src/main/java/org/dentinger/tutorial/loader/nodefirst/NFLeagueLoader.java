@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
@@ -56,6 +57,7 @@ public class NFLeagueLoader {
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
   }
+
   public void loadLeagueNodes() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
 
@@ -75,23 +77,29 @@ public class NFLeagueLoader {
     executorService.shutdown();
     try {
       executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    }catch(Exception e){
-      logger.error("executorService exception: ",e);
+    } catch (Exception e) {
+      logger.error("executorService exception: ", e);
     }
-    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
+    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(),
+        System.currentTimeMillis() - start);
   }
 
   public void loadLeagueRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
     List<League> leagueList = repo.getLeagues();
-    logger.info("About to load Leagues for {} in {} threads", leagueList.size(), numThreads);
+    logger.info("About to load Leagues relationships for {} in {} threads", leagueList.size(), numThreads);
     recordsWritten.set(0);
+
     ExecutorService executorService = getExecutorService(numThreads);
     int subListSize = (int) Math.floor(regions.size() / numThreads);
     long start = System.currentTimeMillis();
-    Lists.partition(leagueList, subListSize).stream().parallel()
-        .forEach((leagues) -> {
+
+    Lists.partition(regions, subListSize).stream().parallel()
+        .forEach((regionsSubList) -> {
+          List<League> leagues = regionsSubList.stream()
+              .map(region -> repo.getLeagues(region)).flatMap(l -> l.stream()).
+                  collect(Collectors.toList());
           executorService.submit(() -> {
             doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_RELATIONSHIPS);
 
@@ -100,10 +108,11 @@ public class NFLeagueLoader {
     executorService.shutdown();
     try {
       executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    }catch(Exception e){
-      logger.error("executorService exception: ",e);
+    } catch (Exception e) {
+      logger.error("executorService exception: ", e);
     }
-    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
+    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(),
+        System.currentTimeMillis() - start);
   }
 
   private void doSubmitableWork(AggregateExceptionLogger aeLogger,
@@ -140,6 +149,5 @@ public class NFLeagueLoader {
         .build();
     return Executors.newFixedThreadPool(numThreads, threadFactory);
   }
-
 
 }
