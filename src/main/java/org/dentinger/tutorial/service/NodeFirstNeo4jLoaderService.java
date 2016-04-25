@@ -34,6 +34,13 @@ public class NodeFirstNeo4jLoaderService {
     if (list.contains("loadLeagues")) {
       leagueLoader.loadLeagueRelationships();
     }
+    if (list.contains("loadAll")) {
+      regionLoader.loadRegions();
+      leagueLoader.loadLeagueNodes();
+
+
+      leagueLoader.loadLeagueRelationships();
+    }
 
   }
 }
