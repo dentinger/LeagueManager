@@ -15,7 +15,7 @@ leagues:
   maxRegionAffiliations: 3
 teams:
   count: 100000
-  loading.threads: 30
+  loading.threads: 100
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8
