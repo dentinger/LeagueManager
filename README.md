@@ -28,6 +28,10 @@ a competitive advantage through continuous excitement delivery at a speed that m
 
 ## Loading approaches for Neo4j
 
+Several approaches are being tested to show how the database handles different amounts of data as
+well as loading approaches.  Unless noted, all of these approaches will chunk data to be inserted into
+uniform sets of data and then process each chunk of data using some form of asynchronous processing.
+
 ### Basic first pass with UNWIND
 
 This approach uses the UNWIND statement with nodes and relationships being created together.
@@ -41,7 +45,7 @@ An example of this approach:
             merge (r)-[:SANCTION]-(l);
 
 
-### Node First
+### Node First with UNWIND
 This approach still uses unwind but first tries to create nodes that are known and then it will create relationships that
 are known.  This is a two pass approach.  An example would be run node cypher statement then run
 relationship statement.
