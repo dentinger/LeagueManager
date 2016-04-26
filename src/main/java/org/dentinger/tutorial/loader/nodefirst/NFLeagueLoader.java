@@ -1,15 +1,10 @@
 package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
@@ -24,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,6 +31,7 @@ public class NFLeagueLoader {
   private SportsBallRepository repo;
   private int numThreads;
   private final AtomicLong recordsWritten = new AtomicLong(0);
+  private ThreadPoolTaskExecutor poolTaskExecutor;
 
   private String MERGE_LEAGUES_NODE =
       "unwind {json} as league "
@@ -49,7 +47,8 @@ public class NFLeagueLoader {
           + "    merge (r)-[:SANCTION]-(l)";
 
   @Autowired
-  public NFLeagueLoader(Neo4jProperties neo4jProperties,
+  public NFLeagueLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
+                        Neo4jProperties neo4jProperties,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env) {
@@ -57,6 +56,7 @@ public class NFLeagueLoader {
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
+    this.poolTaskExecutor = leagueProcessorThreadPool;
   }
 
   public void loadLeagueNodes() {
@@ -65,23 +65,17 @@ public class NFLeagueLoader {
     List<League> leagueList = repo.getLeagues();
     logger.info("About to load {} Leagues using {} threads", leagueList.size(), numThreads);
     recordsWritten.set(0);
-    ExecutorService executorService = getExecutorService(numThreads);
+
     int subListSize = (int) Math.floor(leagueList.size() / numThreads);
     long start = System.currentTimeMillis();
     Lists.partition(leagueList, subListSize).stream().parallel()
         .forEach((leagues) -> {
-          executorService.submit(() -> {
-            doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_NODE);
+          doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_NODE);
 
-          });
         });
-    executorService.shutdown();
-    try {
-      executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    } catch (Exception e) {
-      logger.error("executorService exception: ", e);
-    }
-    logger.info("Processing of {} Leagues using {} threads complete: {}ms", recordsWritten.get(), numThreads,
+    monitorThreadPool();
+    logger.info("Processing of {} Leagues using {} threads complete: {}ms", recordsWritten.get(),
+        numThreads,
         System.currentTimeMillis() - start);
   }
 
@@ -89,34 +83,43 @@ public class NFLeagueLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
     List<League> leagueList = repo.getLeagues();
-    logger.info("About to load {} Leagues relationships using threads", leagueList.size(), numThreads);
+    logger.info("About to load {} Leagues relationships using threads", leagueList.size(),
+        numThreads);
     recordsWritten.set(0);
 
-    ExecutorService executorService = getExecutorService(numThreads);
     int subListSize = (int) Math.floor(regions.size() / numThreads);
     long start = System.currentTimeMillis();
 
     Lists.partition(regions, subListSize).stream().parallel()
         .forEach((regionsSubList) -> {
           List<League> leagues = regionsSubList.stream()
-              .map(region -> repo.getLeagues(region)).flatMap(l -> l.orElse(Collections.emptyList()).stream()).
+              .map(region -> repo.getLeagues(region))
+              .flatMap(l -> l.orElse(Collections.emptyList()).stream()).
                   collect(Collectors.toList());
-          executorService.submit(() -> {
-            doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_RELATIONSHIPS);
 
-          });
+          doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_RELATIONSHIPS);
+
         });
-    executorService.shutdown();
-    try {
-      executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    } catch (Exception e) {
-      logger.error("executorService exception: ", e);
-    }
+    monitorThreadPool();
     logger
-        .info("Processing of {} League relationships using [] threads complete: {}ms", recordsWritten.get(), numThreads,
+        .info("Processing of {} League relationships using [] threads complete: {}ms",
+            recordsWritten.get(), numThreads,
             System.currentTimeMillis() - start);
   }
 
+  private void monitorThreadPool() {
+    while (poolTaskExecutor.getPoolSize() > 0) {
+      logger.info("Currently running threads: {}, jobs still in pool {}", poolTaskExecutor.getActiveCount(),
+          poolTaskExecutor.getPoolSize());
+      try {
+        Thread.sleep(250);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  @Async("leagueProcessorThreadPool")
   private void doSubmitableWork(AggregateExceptionLogger aeLogger,
                                 List<League> leagues,
                                 int size,
@@ -142,14 +145,6 @@ public class NFLeagueLoader {
         neo4jProperties.getUsername(), neo4jProperties.getPassword());
 
     return new Neo4jTemplate(session);
-  }
-
-  private ExecutorService getExecutorService(int numThreads) {
-    final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-        .setNameFormat("leagueLoader-nodefirst-%d")
-        .setDaemon(true)
-        .build();
-    return Executors.newFixedThreadPool(numThreads, threadFactory);
   }
 
 }

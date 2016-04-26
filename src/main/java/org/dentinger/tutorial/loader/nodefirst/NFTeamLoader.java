@@ -1,18 +1,12 @@
 package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
-import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.neo4j.ogm.session.Session;
@@ -34,7 +28,7 @@ public class NFTeamLoader {
   private SportsBallRepository repo;
   private int numThreads;
   private final AtomicLong recordsWritten = new AtomicLong(0);
-  private ThreadPoolTaskExecutor teamPool;
+  private ThreadPoolTaskExecutor poolTaskExecutor;
 
   private String MERGE_TEAM_NODES =
       "unwind {json} as team "
@@ -52,7 +46,7 @@ public class NFTeamLoader {
       "match (t:Team) detach delete t";
 
   @Autowired
-  public NFTeamLoader(ThreadPoolTaskExecutor teamPool,
+  public NFTeamLoader(ThreadPoolTaskExecutor teamProcessorThreadPool,
                       Neo4jProperties neo4jProperties,
                       SessionFactory sessionFactory,
                       SportsBallRepository repo,
@@ -61,7 +55,7 @@ public class NFTeamLoader {
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("teams.loading.threads", "1"));
-    this.teamPool = teamPool;
+    this.poolTaskExecutor = teamProcessorThreadPool;
   }
 
   public void loadTeams() {
@@ -77,11 +71,12 @@ public class NFTeamLoader {
     Lists.partition(teamList, subListSize).stream().parallel()
         .forEach((sublist) -> {
 
-            processTeamsInDB(aeLogger, sublist);
+          processTeamsInDB(aeLogger, sublist);
 
         });
-    while(teamPool.getPoolSize() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}", teamPool.getActiveCount(), teamPool.getPoolSize());
+    while (poolTaskExecutor.getPoolSize() > 0) {
+      logger.info("Currently running threads: {}, jobs still in pool {}", poolTaskExecutor.getActiveCount(),
+          poolTaskExecutor.getPoolSize());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {
@@ -93,8 +88,9 @@ public class NFTeamLoader {
   }
 
   @Async("teamProcessorThreadPool")
-  private void processTeamsInDB(AggregateExceptionLogger aeLogger, List<Team> sublist) {Neo4jTemplate
-      neo4jTemplate = getNeo4jTemplate();
+  private void processTeamsInDB(AggregateExceptionLogger aeLogger, List<Team> sublist) {
+    Neo4jTemplate
+        neo4jTemplate = getNeo4jTemplate();
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", sublist);
     try {
@@ -113,6 +109,5 @@ public class NFTeamLoader {
 
     return new Neo4jTemplate(session);
   }
-
 
 }

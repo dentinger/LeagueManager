@@ -20,23 +20,54 @@ public class ThreadPoolConfig {
     return threadFactory;
   }
 
+
+  public  ThreadFactory getLeagueThreadFactory() {
+    return new ThreadFactoryBuilder()
+        .setNameFormat("leagueLoader-%d")
+        .setDaemon(true)
+        .build();
+
+  }
+
   @Bean(name = "teamProcessorThreadPool")
-  public ThreadPoolTaskExecutor getFileProcessorThreadPool(Environment applicationProperties) {
+  public ThreadPoolTaskExecutor getTeamProcessorThreadPool(Environment applicationProperties) {
     ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
     taskExecutor.setAllowCoreThreadTimeOut(false);
 
     taskExecutor
         .setCorePoolSize(
-            Integer.valueOf(applicationProperties.getProperty("team.threads.size.core")));
+            Integer.valueOf(applicationProperties.getProperty("teams.threads.size.core")));
     taskExecutor.setMaxPoolSize(
-        Integer.valueOf(applicationProperties.getProperty("team.threads.size.maxpool")));
+        Integer.valueOf(applicationProperties.getProperty("teams.threads.size.maxpool")));
     taskExecutor.setQueueCapacity(
-        Integer.valueOf(applicationProperties.getProperty("team.threads.queue.capacity")));
+        Integer.valueOf(applicationProperties.getProperty("teams.threads.queue.capacity")));
     taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     taskExecutor.setThreadFactory(getTeamThreadFactory());
     taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
 
     return taskExecutor;
   }
+
+  @Bean(name = "leagueProcessorThreadPool")
+  public ThreadPoolTaskExecutor getLeagueProcessorThreadPool(Environment applicationProperties) {
+    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+    taskExecutor.setAllowCoreThreadTimeOut(false);
+
+    taskExecutor
+        .setCorePoolSize(
+            Integer.valueOf(applicationProperties.getProperty("leagues.threads.size.core")));
+    taskExecutor.setMaxPoolSize(
+        Integer.valueOf(applicationProperties.getProperty("leagues.threads.size.maxpool")));
+    taskExecutor.setQueueCapacity(
+        Integer.valueOf(applicationProperties.getProperty("leagues.threads.queue.capacity")));
+    taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    taskExecutor.setThreadFactory(getLeagueThreadFactory());
+    taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+
+    return taskExecutor;
+  }
+
+
 }
