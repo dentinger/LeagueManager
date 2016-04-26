@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -109,7 +110,8 @@ public class NFLeagueLoader {
 
   private void monitorThreadPool() {
     while (poolTaskExecutor.getPoolSize() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}", poolTaskExecutor.getActiveCount(),
+      logger.info("Currently running threads: {}, jobs still in pool {}",
+          poolTaskExecutor.getActiveCount(),
           poolTaskExecutor.getPoolSize());
       try {
         Thread.sleep(250);
@@ -133,6 +135,13 @@ public class NFLeagueLoader {
     try {
       neo4jTemplate.execute(cypher, map);
       recordsWritten.addAndGet(size);
+    } catch (DataRetrievalFailureException e) {
+      logger.info("Deadlock detected, trying again in 500ms");
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e1) {
+        logger.info("Thread interupted");
+      }
     } catch (Exception e) {
       aeLogger
           .error("Unable to update graph, leagueCount={}", size,
