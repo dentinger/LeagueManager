@@ -2,6 +2,7 @@ package org.dentinger.tutorial;
 
 import java.util.Arrays;
 import java.util.List;
+import org.dentinger.tutorial.loader.NodeIndexes;
 import org.dentinger.tutorial.service.Neo4jLoaderService;
 import org.dentinger.tutorial.service.NodeFirstNeo4jLoaderService;
 import org.slf4j.Logger;
@@ -23,7 +24,9 @@ public class Neo4jDemoApplication {
   }
 
   @Bean CommandLineRunner runLoader(Neo4jLoaderService service,
-                                    NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService) {
+                                    NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService,
+                                    NodeIndexes nodeIndexes) {
+    nodeIndexes.createIndexes();
     return args -> {
       List<String> list = Arrays.asList(args);
       if (!list.contains("nodeFirst")) {
