@@ -21,3 +21,11 @@ teams:
   minPlayersPerTeam: 8
   maxPlayersPerTeam: 12
 
+
+team:
+  threads:
+    size:
+      core: 5
+      maxpool: 20
+    queue:
+      capacity: 200

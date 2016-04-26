@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -32,6 +34,7 @@ public class NFTeamLoader {
   private SportsBallRepository repo;
   private int numThreads;
   private final AtomicLong recordsWritten = new AtomicLong(0);
+  private ThreadPoolTaskExecutor teamPool;
 
   private String MERGE_TEAM_NODES =
       "unwind {json} as team "
@@ -49,7 +52,8 @@ public class NFTeamLoader {
       "match (t:Team) detach delete t";
 
   @Autowired
-  public NFTeamLoader(Neo4jProperties neo4jProperties,
+  public NFTeamLoader(ThreadPoolTaskExecutor teamPool,
+                      Neo4jProperties neo4jProperties,
                       SessionFactory sessionFactory,
                       SportsBallRepository repo,
                       Environment env) {
@@ -57,44 +61,50 @@ public class NFTeamLoader {
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("teams.loading.threads", "1"));
+    this.teamPool = teamPool;
   }
 
   public void loadTeams() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    //List<League> leagues = repo.getLeagues();
+
     List<Team> teamList = repo.getTeams();
 
     logger.info("About to load {} Teams using {} threads", teamList.size(), numThreads);
     recordsWritten.set(0);
-    ExecutorService executorService = getExecutorService(numThreads);
+
     int subListSize = (int) Math.floor(teamList.size() / numThreads);
     long start = System.currentTimeMillis();
     Lists.partition(teamList, subListSize).stream().parallel()
         .forEach((sublist) -> {
 
-          executorService.submit(() -> {
-            Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("json", sublist);
-            try {
-              neo4jTemplate.execute(MERGE_TEAM_NODES, map);
-              recordsWritten.addAndGet(sublist.size());
-            } catch (Exception e) {
-              aeLogger
-                  .error("Unable to update graph, teamCount={}",
-                      sublist.size(), e);
-            }
+            processTeamsInDB(aeLogger, sublist);
 
-          });
         });
-    executorService.shutdown();
-    try {
-      executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    } catch (Exception e) {
-      logger.error("executorService exception: ", e);
+    while(teamPool.getPoolSize() > 0) {
+      logger.info("Currently running threads: {}, jobs still in pool {}", teamPool.getActiveCount(), teamPool.getPoolSize());
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
     logger.info("Processing of {} Team relationships complete: {}ms", recordsWritten.get(),
         System.currentTimeMillis() - start);
+  }
+
+  @Async("teamProcessorThreadPool")
+  private void processTeamsInDB(AggregateExceptionLogger aeLogger, List<Team> sublist) {Neo4jTemplate
+      neo4jTemplate = getNeo4jTemplate();
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("json", sublist);
+    try {
+      neo4jTemplate.execute(MERGE_TEAM_NODES, map);
+      recordsWritten.addAndGet(sublist.size());
+    } catch (Exception e) {
+      aeLogger
+          .error("Unable to update graph, teamCount={}",
+              sublist.size(), e);
+    }
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
@@ -104,12 +114,5 @@ public class NFTeamLoader {
     return new Neo4jTemplate(session);
   }
 
-  private ExecutorService getExecutorService(int numThreads) {
-    final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-        .setNameFormat("teamLoader-%d")
-        .setDaemon(true)
-        .build();
-    return Executors.newFixedThreadPool(numThreads, threadFactory);
-  }
 
 }
