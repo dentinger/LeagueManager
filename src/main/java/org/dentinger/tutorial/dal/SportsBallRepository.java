@@ -39,7 +39,8 @@ public class SportsBallRepository {
   }
 
   public List<League> getLeagues() {
-    return leagueMap.values().stream().flatMap(l -> l.stream()).distinct().collect(Collectors.toList());
+    return leagueMap.values().stream().flatMap(l -> l.stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   public List<League> getLeagues(Region region) {
@@ -47,7 +48,8 @@ public class SportsBallRepository {
   }
 
   public List<Team> getTeams() {
-    return teamMap.values().stream().flatMap(l -> l.stream()).distinct().collect(Collectors.toList());
+    return teamMap.values().stream().flatMap(l -> l.stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   public List<Team> getTeams(League league) {
@@ -55,7 +57,8 @@ public class SportsBallRepository {
   }
 
   public List<Person> getPersons() {
-    return personMap.values().stream().flatMap(l -> l.stream()).distinct().collect(Collectors.toList());
+    return personMap.values().stream().flatMap(l -> l.stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   public List<Person> getPersons(Team team) {
@@ -68,7 +71,7 @@ public class SportsBallRepository {
     generateRegions();
     generateLeagues();
     generateTeams(); // Also generates persons
-    logger.info("Initialization complete: {}ms",System.currentTimeMillis()-start);
+    logger.info("Initialization complete: {}ms", System.currentTimeMillis() - start);
   }
 
   private void generateRegions() {
@@ -82,8 +85,10 @@ public class SportsBallRepository {
 
   private void generateLeagues() {
     int leagueCount = Integer.valueOf(environment.getRequiredProperty("leagues.count"));
-    int minRegionAffiliations = Integer.valueOf(environment.getRequiredProperty("leagues.minRegionAffiliations"));
-    int maxRegionAffiliations = Integer.valueOf(environment.getRequiredProperty("leagues.maxRegionAffiliations"));
+    int minRegionAffiliations = Integer
+        .valueOf(environment.getRequiredProperty("leagues.minRegionAffiliations"));
+    int maxRegionAffiliations = Integer
+        .valueOf(environment.getRequiredProperty("leagues.maxRegionAffiliations"));
     leagueMap = new HashMap<>();
     LongStream.range(1, leagueCount + 1)
         .forEach(id -> {
@@ -93,9 +98,9 @@ public class SportsBallRepository {
                 // logger.info("Adding league({}) to region({})",league.getId(),x);
                 Long regionId = regionList.get(x.intValue()).getId();
                 List<League> leagues = leagueMap.get(regionId);
-                if( leagues == null){
+                if (leagues == null) {
                   leagues = new ArrayList<League>();
-                  leagueMap.put(regionId,leagues);
+                  leagueMap.put(regionId, leagues);
                 }
                 leagues.add(league);
                 league.addRegion(regionList.get(x.intValue()));
@@ -106,10 +111,14 @@ public class SportsBallRepository {
 
   private void generateTeams() {
     int teamCount = Integer.valueOf(environment.getRequiredProperty("teams.count"));
-    int minLeagueMemberships = Integer.valueOf(environment.getRequiredProperty("teams.minLeagueMemberships"));
-    int maxLeagueMemberships = Integer.valueOf(environment.getRequiredProperty("teams.maxLeagueMemberships"));
-    int minPlayersPerTeam = Integer.valueOf(environment.getRequiredProperty("teams.minPlayersPerTeam"));
-    int maxPlayersPerTeam = Integer.valueOf(environment.getRequiredProperty("teams.maxPlayersPerTeam"));
+    int minLeagueMemberships = Integer
+        .valueOf(environment.getRequiredProperty("teams.minLeagueMemberships"));
+    int maxLeagueMemberships = Integer
+        .valueOf(environment.getRequiredProperty("teams.maxLeagueMemberships"));
+    int minPlayersPerTeam = Integer
+        .valueOf(environment.getRequiredProperty("teams.minPlayersPerTeam"));
+    int maxPlayersPerTeam = Integer
+        .valueOf(environment.getRequiredProperty("teams.maxPlayersPerTeam"));
     teamMap = new HashMap<>();
     personMap = new HashMap<>();
     List<League> leagueList = getLeagues();
@@ -121,9 +130,9 @@ public class SportsBallRepository {
               .forEach(x -> {
                 Long leagueId = leagueList.get(x.intValue()).getId();
                 List<Team> teams = teamMap.get(leagueId);
-                if( teams == null){
+                if (teams == null) {
                   teams = new ArrayList<Team>();
-                  teamMap.put(leagueId,teams);
+                  teamMap.put(leagueId, teams);
                 }
                 teams.add(team);
                 team.addLeague(leagueList.get(x.intValue()));
@@ -133,15 +142,16 @@ public class SportsBallRepository {
   }
 
   private void generatePlayers(Team team, int minPlayers, int maxPlayers) {
-    int playerCount = (minPlayers == maxPlayers)?maxPlayers :
-      new Random(System.currentTimeMillis()).ints(minPlayers, maxPlayers).limit(1).findFirst().getAsInt();
+    int playerCount = (minPlayers == maxPlayers) ? maxPlayers :
+        new Random(System.currentTimeMillis()).ints(minPlayers, maxPlayers).limit(1).findFirst()
+            .getAsInt();
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
-          Person person = new Person(id, "Player-"+id);
+          Person person = new Person(id, "Player-" + id);
           List<Person> persons = personMap.get(team.getId());
-          if( persons == null){
+          if (persons == null) {
             persons = new ArrayList<Person>();
-            personMap.put(team.getId(),persons);
+            personMap.put(team.getId(), persons);
           }
           persons.add(person);
           person.addTeam(team);
@@ -150,19 +160,23 @@ public class SportsBallRepository {
 
   private Stream<Long> getParentOffsets(long range, int minReturned, int maxReturned) {
     Random r = new Random(System.currentTimeMillis());
-    int returnCount = (minReturned == maxReturned)? maxReturned :
+    int returnCount = (minReturned == maxReturned) ? maxReturned :
         r.ints(minReturned, maxReturned).limit(1).findFirst().getAsInt();
     return r.longs(0, range).limit(returnCount).distinct().boxed();
   }
 
-  private String[] adjs = new String[] {
-      "Fast", "Big", "Mighty", "Super", "Shining", "Cold Hearted"
+  private String[] adjs = new String[]{
+      "Fast", "Big", "Mighty", "Super", "Shining", "Cold Hearted", "Free Range", "Thundering ",
+      "Purple", "Great Green", "Lovely", "Yellow", "Stuffed", "Flat", "Dirty",
+      "Tiny", "Alpha", "Omega", "Vegetarian", "Pirate"
   };
   private String[] nouns = new String[]{
-      "Dogs", "Pumas", "Jack Fruit Farmers", "Strikers", "Bashers"
+      "Dogs", "Pumas", "Jack Fruit Farmers", "Strikers", "Bashers", "Guavateer", "Herd", "Badgers",
+      "Spiders", "Pulled Pork Pirates", "Apes", "Hobos", "Pictures", "Games", "Bed", "Basket",
+      "Flower", "Apples", "Chips"
   };
 
-  private String generateName(Random rand, Long teamId){
+  private String generateName(Random rand, Long teamId) {
     return adjs[rand.ints(1, 0, adjs.length).findFirst().getAsInt()] + " " +
         nouns[rand.ints(1, 0, nouns.length).findFirst().getAsInt()];
   }
