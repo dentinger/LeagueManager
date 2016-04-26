@@ -31,6 +31,8 @@ a competitive advantage through continuous excitement delivery at a speed that m
 Several approaches are being tested to show how the database handles different amounts of data as
 well as loading approaches.  Unless noted, all of these approaches will chunk data to be inserted into
 uniform sets of data and then process each chunk of data using some form of asynchronous processing.
+These approaches also assume that indexes are created for the node types. Note that in early commits to
+LeagueManager this was not being done properly and as a result performance suffered.
 
 ### Basic first pass with UNWIND
 
