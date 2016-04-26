@@ -171,9 +171,9 @@ public class SportsBallRepository {
       "Tiny", "Alpha", "Omega", "Vegetarian", "Pirate"
   };
   private String[] nouns = new String[]{
-      "Dogs", "Pumas", "Jack Fruit Farmers", "Strikers", "Bashers", "Guavateer", "Herd", "Badgers",
+      "Dogs", "Pumas", "Jack Fruit Farmers", "Strikers", "Bashers", "Guavateers", "Herd", "Badgers",
       "Spiders", "Pulled Pork Pirates", "Apes", "Hobos", "Pictures", "Games", "Bed", "Basket",
-      "Flower", "Apples", "Chips"
+      "Flower", "Apples", "Chips", "Nuubs", "Pros"
   };
 
   private String generateName(Random rand, Long teamId) {
