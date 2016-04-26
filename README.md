@@ -23,7 +23,41 @@ SportsBall teams and their Leagues will be:
 
  ![Leagure Manager Model](./docs/LeagueManagerModel.png)
 
-SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers competitive advantage through continuous excitement delivery at a speed that matters.
+SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers
+a competitive advantage through continuous excitement delivery at a speed that matters.
+
+## Loading approaches for Neo4j
+
+### Basic first pass with UNWIND
+
+This approach uses the UNWIND statement with nodes and relationships being created together.
+An example of this approach:
+
+    unwind {json} as league
+         unwind league.regions as region
+             merge (r:Region {id: region.id}) 
+            merge (l:League {id: league.id})
+                 on create set l.name = league.name
+            merge (r)-[:SANCTION]-(l);
+
+
+### Node First
+This approach still uses unwind but first tries to create nodes that are known and then it will create relationships that
+are known.  This is a two pass approach.  An example would be run node cypher statement then run
+relationship statement.
+
+    private String MERGE_LEAGUES_NODE =
+          "unwind {json} as league "
+              + "unwind league.regions as region "
+              + "    merge (l:League {id: league.id})"
+              + "     on create set l.name = league.name ";
+
+      private String MERGE_LEAGUES_RELATIONSHIPS =
+          "unwind {json} as league "
+              + "unwind league.regions as region "
+              + "   match (r:Region {id: region.id})"
+              + "    match (l:League {id: league.id})"
+              + "    merge (r)-[:SANCTION]-(l)";
 
 ## How to use
 
