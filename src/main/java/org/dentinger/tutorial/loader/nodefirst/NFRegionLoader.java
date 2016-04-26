@@ -39,42 +39,46 @@ public class NFRegionLoader {
           "  on match set r.name = q.name";
 
   @Autowired
-  public NFRegionLoader(Neo4jProperties neo4jProperties, SessionFactory sessionFactory, SportsBallRepository repo, Environment env) {
+  public NFRegionLoader(Neo4jProperties neo4jProperties,
+                        SessionFactory sessionFactory,
+                        SportsBallRepository repo,
+                        Environment env) {
     this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
-    this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads","1"));
+    this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads", "1"));
   }
 
   public void loadRegions() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
-    logger.info("About to load {} regions using {} threads", regions.size(), numThreads);
+    logger.info("About to load {} Regions using {} threads", regions.size(), numThreads);
     recordsWritten.set(0);
     ExecutorService executorService = getExecutorService(numThreads);
     int subListSize = (int) Math.floor(regions.size() / numThreads);
     long start = System.currentTimeMillis();
     Lists.partition(regions, subListSize).stream().parallel()
         .forEach((sublist) -> {
-              executorService.submit(() -> {
-                try{
-                  Map<String, Object> map = new HashMap<String, Object>();
-                  map.put("json", sublist);
-                  getNeo4jTemplate().execute(MERGE_REGIONS, map);
-                  logger.info("Processing of sublist (size={}) complete",sublist.size());
-                  recordsWritten.addAndGet(sublist.size());
-                } catch (Exception e) {
-                  aeLogger.error("Unable to update graph, regionCount={}", regions.size(), e);
-                }
-              });
-            });
+          executorService.submit(() -> {
+            try {
+              Map<String, Object> map = new HashMap<String, Object>();
+              map.put("json", sublist);
+              getNeo4jTemplate().execute(MERGE_REGIONS, map);
+              logger.info("Processing of sublist (size={}) complete", sublist.size());
+              recordsWritten.addAndGet(sublist.size());
+            } catch (Exception e) {
+              aeLogger.error("Unable to update graph, regionCount={}", regions.size(), e);
+            }
+          });
+        });
     executorService.shutdown();
     try {
       executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    }catch(Exception e){
-      logger.error("executorService exception: ",e);
+    } catch (Exception e) {
+      logger.error("executorService exception: ", e);
     }
-    logger.info("Processing of {} Regional relationships complete: {}ms", recordsWritten.get(), System.currentTimeMillis() - start);
+    logger.info("Processing of {} Regions using {} threads complete: {}ms", recordsWritten.get(),
+        numThreads, System.currentTimeMillis() - start);
   }
 
   private Neo4jTemplate getNeo4jTemplate() {

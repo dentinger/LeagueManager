@@ -19,7 +19,7 @@ public class Neo4jDemoApplication {
   private final static Logger log = LoggerFactory.getLogger(Neo4jDemoApplication.class);
 
   public static void main(String[] args) {
-    SpringApplication.run(Neo4jDemoApplication.class, args);
+    SpringApplication.run(Neo4jDemoApplication.class, args).close();
   }
 
   @Bean CommandLineRunner runLoader(Neo4jLoaderService service,

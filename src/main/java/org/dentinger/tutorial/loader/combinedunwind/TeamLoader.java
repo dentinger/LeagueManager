@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -68,9 +69,9 @@ public class TeamLoader {
           executorService.submit(() -> {
             Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
             sublist.stream().forEach(league -> {
-              List<Team> teams = repo.getTeams(league);
-              if (teams != null) {
-                logger.info("About to load {} teams for league({})", teams.size(), league.getId());
+              Optional<List<Team>> teams = repo.getTeams(league);
+              if (teams.isPresent()) {
+                logger.info("About to load {} teams for league({})", teams.get().size(), league.getId());
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("json", teams);
                 try {
@@ -79,7 +80,7 @@ public class TeamLoader {
                 } catch (Exception e) {
                   aeLogger
                       .error("Unable to update graph, leagueId={}, teamCount={}", league.getId(),
-                          teams.size(), e);
+                          teams.get().size(), e);
                 }
               }
             });

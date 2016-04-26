@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.dentinger.tutorial.domain.League;
+import org.dentinger.tutorial.domain.Person;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
-import org.dentinger.tutorial.domain.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +43,8 @@ public class SportsBallRepository {
         .collect(Collectors.toList());
   }
 
-  public List<League> getLeagues(Region region) {
-    return leagueMap.get(region.getId());
+  public Optional<List<League>> getLeagues(Region region) {
+    return Optional.of(leagueMap.get(region.getId()));
   }
 
   public List<Team> getTeams() {
@@ -52,8 +52,9 @@ public class SportsBallRepository {
         .collect(Collectors.toList());
   }
 
-  public List<Team> getTeams(League league) {
-    return teamMap.get(league.getId());
+  public Optional<List<Team>> getTeams(League league) {
+
+    return Optional.of(teamMap.get(league.getId()));
   }
 
   public List<Person> getPersons() {
@@ -61,8 +62,9 @@ public class SportsBallRepository {
         .collect(Collectors.toList());
   }
 
-  public List<Person> getPersons(Team team) {
-    return personMap.get(team.getId());
+  public Optional<List<Person>> getPersons(Team team) {
+
+    return Optional.of(personMap.get(team.getId()));
   }
 
   private void init() {
