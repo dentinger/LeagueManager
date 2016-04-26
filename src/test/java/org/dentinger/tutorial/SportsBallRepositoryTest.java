@@ -1,6 +1,7 @@
 package org.dentinger.tutorial;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
@@ -100,8 +101,8 @@ public class SportsBallRepositoryTest {
     Long max = Long.valueOf(maxPlayersPerTeam).longValue();
     teamList.stream()
         .forEach(team -> {
-          List<Person> persons = sut.getPersons(team);
-          assertTrue(min <= persons.size() && persons.size() <= max);
+          Optional<List<Person>> persons = sut.getPersons(team);
+          assertTrue(min <= persons.get().size() && persons.get().size() <= max);
         });
   }
 }

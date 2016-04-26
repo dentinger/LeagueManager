@@ -2,9 +2,11 @@ package org.dentinger.tutorial.loader.combinedunwind;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -70,19 +72,19 @@ public class LeagueLoader {
           executorService.submit(() -> {
             Neo4jTemplate neo4jTemplate = getNeo4jTemplate();
             sublist.stream().forEach(region -> {
-              List<League> leagues = repo.getLeagues(region);
-              if (leagues != null) {
-                logger.info("About to load {} league nodes for region({})", leagues.size(),
+              Optional<List<League>> leagues = repo.getLeagues(region);
+              if (leagues.isPresent()) {
+                logger.info("About to load {} league nodes for region({})", leagues.get().size(),
                     region.getId());
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("json", leagues);
                 try {
                   neo4jTemplate.execute(MERGE_LEAGUES, map);
-                  recordsWritten.addAndGet(leagues.size());
+                  recordsWritten.addAndGet(leagues.get().size());
                 } catch (Exception e) {
                   aeLogger
                       .error("Unable to update graph, regionId={}, leagueCount={}", region.getId(),
-                          leagues.size(),
+                          leagues.get().size(),
                           e);
                 }
               }

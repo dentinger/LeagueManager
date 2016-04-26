@@ -2,6 +2,7 @@ package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class NFLeagueLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
 
     List<League> leagueList = repo.getLeagues();
-    logger.info("About to load Leagues for {} in {} threads", leagueList.size(), numThreads);
+    logger.info("About to load {} Leagues using {} threads", leagueList.size(), numThreads);
     recordsWritten.set(0);
     ExecutorService executorService = getExecutorService(numThreads);
     int subListSize = (int) Math.floor(leagueList.size() / numThreads);
@@ -80,7 +81,7 @@ public class NFLeagueLoader {
     } catch (Exception e) {
       logger.error("executorService exception: ", e);
     }
-    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(),
+    logger.info("Processing of {} Leagues using {} threads complete: {}ms", recordsWritten.get(), numThreads,
         System.currentTimeMillis() - start);
   }
 
@@ -88,7 +89,7 @@ public class NFLeagueLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
     List<League> leagueList = repo.getLeagues();
-    logger.info("About to load Leagues relationships for {} in {} threads", leagueList.size(), numThreads);
+    logger.info("About to load {} Leagues relationships using threads", leagueList.size(), numThreads);
     recordsWritten.set(0);
 
     ExecutorService executorService = getExecutorService(numThreads);
@@ -98,7 +99,7 @@ public class NFLeagueLoader {
     Lists.partition(regions, subListSize).stream().parallel()
         .forEach((regionsSubList) -> {
           List<League> leagues = regionsSubList.stream()
-              .map(region -> repo.getLeagues(region)).flatMap(l -> l.stream()).
+              .map(region -> repo.getLeagues(region)).flatMap(l -> l.orElse(Collections.emptyList()).stream()).
                   collect(Collectors.toList());
           executorService.submit(() -> {
             doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_RELATIONSHIPS);
@@ -111,8 +112,9 @@ public class NFLeagueLoader {
     } catch (Exception e) {
       logger.error("executorService exception: ", e);
     }
-    logger.info("Processing of {} League relationships complete: {}ms", recordsWritten.get(),
-        System.currentTimeMillis() - start);
+    logger
+        .info("Processing of {} League relationships using [] threads complete: {}ms", recordsWritten.get(), numThreads,
+            System.currentTimeMillis() - start);
   }
 
   private void doSubmitableWork(AggregateExceptionLogger aeLogger,
@@ -122,7 +124,7 @@ public class NFLeagueLoader {
     Neo4jTemplate
         neo4jTemplate = getNeo4jTemplate();
 
-    logger.info("About to load {} leagues ", size);
+    logger.info("About to process {} leagues ", size);
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", leagues);
     try {
