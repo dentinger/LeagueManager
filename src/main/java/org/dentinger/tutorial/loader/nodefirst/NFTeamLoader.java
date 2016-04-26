@@ -83,7 +83,7 @@ public class NFTeamLoader {
     while(teamPool.getPoolSize() > 0) {
       logger.info("Currently running threads: {}, jobs still in pool {}", teamPool.getActiveCount(), teamPool.getPoolSize());
       try {
-        Thread.sleep(1000);
+        Thread.sleep(250);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
