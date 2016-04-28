@@ -87,6 +87,7 @@ To run the test project either run the Spring Boot application from the command 
 | Load League data  | loadLeagues  | Only load league data to the application.  |
 | Load Region data  | loadRegions  | Only load region data to the application. |
 | Load Team data | loadTeams | Only load team data to the application. |
+| Load Person data | loadPersons | Only load team data to the application |
 | Run Node First insertion | nodeFirst | Run using the node first approach for loaders. |
 
 Sample usage: *java -jar leagueManager-0.0.1-RELEASE.jar loadLeagues loadRegions*
