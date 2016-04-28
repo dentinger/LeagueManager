@@ -3,6 +3,7 @@ package org.dentinger.tutorial.domain;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
@@ -10,7 +11,7 @@ import org.neo4j.ogm.annotation.Relationship;
 @NodeEntity
 public class Person {
   @GraphId
-  private Long id;
+  private UUID id;
 
   private String name;
 
@@ -25,17 +26,17 @@ public class Person {
   @Relationship(type = "FANOF")
   Set<Team> follows;
 
-  public Person(Long id, String name){
+  public Person(UUID id, String name){
     this.id = id;
     this.name = name;
     this.playson = new HashSet<>();
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
@@ -81,5 +82,12 @@ public class Person {
 
   public void addTeam(Team team){
     playson.add(team);
+  }
+
+  @Override public String toString() {
+    return "Person{" +
+        "id=" + id.toString() +
+        ", name='" + name + '\'' +
+        '}';
   }
 }

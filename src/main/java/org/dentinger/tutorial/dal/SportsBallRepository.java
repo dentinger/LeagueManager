@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -124,7 +125,7 @@ public class SportsBallRepository {
     teamMap = new HashMap<>();
     personMap = new HashMap<>();
     List<League> leagueList = getLeagues();
-    Random rand = new Random(System.currentTimeMillis());
+    Random rand = new Random();
     LongStream.range(1, teamCount + 1)
         .forEach(id -> {
           Team team = new Team(id, generateName(rand, id));
@@ -144,12 +145,13 @@ public class SportsBallRepository {
   }
 
   private void generatePlayers(Team team, int minPlayers, int maxPlayers) {
+    Random rand = new Random();
     int playerCount = (minPlayers == maxPlayers) ? maxPlayers :
-        new Random(System.currentTimeMillis()).ints(minPlayers, maxPlayers).limit(1).findFirst()
+        rand.ints(minPlayers, maxPlayers).limit(1).findFirst()
             .getAsInt();
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
-          Person person = new Person(id, "Player-" + id);
+          Person person = new Person(UUID.randomUUID(), generatePlayerName(rand));
           List<Person> persons = personMap.get(team.getId());
           if (persons == null) {
             persons = new ArrayList<Person>();
@@ -178,9 +180,70 @@ public class SportsBallRepository {
       "Flower", "Apples", "Chips", "Nuubs", "Pros"
   };
 
+  private String[] firstNames = new String[]{
+      "Tomi  ", "Vinnie  ", "Alicia  ", "Brandie  ", "Madlyn  ", "Sandi  ", "Ariana  ", "Otilia  ",
+      "Jeanice  ", "Alonso  ", "Chere  ", "Beverlee  ", "Johana  ", "Korey  ", "Mabel  ",
+      "Earnest  ", "Lelia  ", "Freeda  ", "Cherri  ", "Bud  ", "Stasia  ", "Jerald  ", "Alona  ",
+      "Joann  ", "Damian  ", "Nancee  ", "Bari  ", "Ludie  ", "Honey  ", "Marnie  ", "Maryln  ",
+      "Stephine  ", "Teena  ", "Sherrill  ", "Cleta  ", "Darin  ", "Leisha  ", "Shemeka  ",
+      "Katina  ", "Coy  ", "Jackeline  ", "Aja  ", "Kathline  ", "Arminda  ", "Demarcus  ",
+      "Edmund  ", "Kurt  ", "Christoper  ", "Ami  ", "Tandy", "Candie  ", "Lawerence  ",
+      "Terrance  ", "Martha  ", "Marian  ", "Kennith  ", "Mariano  ", "Randee  ", "Slyvia  ",
+      "Felipa  ", "Christeen  ", "Lacy  ", "Bertie  ", "Versie  ", "Jamar  ", "Florene  ",
+      "Awilda  ", "Donna  ", "Tarah  ", "Kelsey  ", "Hillary  ", "Huong  ", "Yanira  ", "Scarlet  ",
+      "Chanelle  ", "Maryrose  ", "Shea  ", "Seymour  ", "Sudie  ", "Courtney  ", "Tamiko  ",
+      "Gwyn  ", "Dolores  ", "Roosevelt  ", "Maxine  ", "Robena  ", "Aisha  ", "Enriqueta  ",
+      "Hassie  ", "Devon  ", "Catherin  ", "Lucien  ", "Augustus  ", "Deidra  ", "Parthenia  ",
+      "Anibal  ", "Mariela  ", "Sabrina  ", "Eugena ", "Retha  ", "Wilhemina  ", "Matt  ",
+      "Kayleen  ", "Novella  ", "Antonette  ", "Melba  ", "Ranee  ", "Mariel  ", "Vincenzo  ",
+      "Denis  ", "Katheryn  ", "Amparo  ", "Shannon  ", "Grazyna  ", "Mercedes  ", "Carman  ",
+      "Celestina  ", "Claretta  ", "Colene  ", "Eli  ", "Brittani  ", "Chi  ", "Kellie  ",
+      "Chong  ", "Mara  ", "Lyda  ", "Trinh  ", "Marisol  ", "Darcie  ", "Barb  ", "Mendy  ",
+      "Roland  ", "Ermelinda  ", "Kandice  ", "Benton  ", "Charline  ", "Katie  ", "Sheilah  ",
+      "Verlene  ", "Calista  ", "Cordia  ", "Chery  ", "Lawanda  ", "Eloise  ", "Monica  ",
+      "Jody  ", "Janita  ", "Lavonne  ", "Dorthey  ", "Rex  ", "Nydia  ", "Vanda  ", "Long  ",
+      "Enoch  ", "Sherron  ", "Gary  ", "Jarred  ", "Herma  ", "Consuela  ", "Janett  ", "Ned  ",
+      "Ahmed  ", "Virginia  ", "Sheri  ", "Caron  ", "Juliana  ", "Vernie  ", "Fredricka  ",
+      "Dudley  ", "Ethelyn  ", "Garry  ", "Hellen  ", "Wilton  ", "Clarinda  ", "Synthia  ",
+      "Catherina  ", "Eddie  ", "Carmina  ", "Theresa  ", "Sheena  ", "Akilah  ", "Lewis  ",
+      "Jacob  ", "Barbara  ", "Nolan  ", "Ashanti  ", "Thanh  ", "Kaylee  ", "Alexis  ", "Lyman  ",
+      "Hae  ", "Christi  ", "Marlena  ", "Colin  ", "Enola  ", "Enid  ", "Leticia  ", "Ron ",
+      "Dan ", "Shawn ", "Erik", "Tony ", "Gerald ", "Jane ", "Michael ", "Mike ", "Joseph ",
+      "Wesley ", "Haley ", "Maynard "
+  };
+  private String[] lastNames = new String[]{
+      "Barker", "Morales", "Garrison", "Ayala", "Sutton", "Delacruz", "Olsen", "Stephenson",
+      "Adkins", "Tran", "Hicks", "Lara", "Barrett", "Warren", "Harper", "Reyes", "Liu", "Best",
+      "Robinson", "Davies", "Wood", "Mcconnell", "Galloway", "Whitehead", "Christensen", "Moon",
+      "Good", "Michael", "Peterson", "Gibbs", "Clayton", "Mccoy", "Chandler", "French", "Reynolds",
+      "Carrillo", "Duncan", "Faulkner", "Harrell", "Williams", "Sweeney", "Daniels", "Abbott",
+      "Castaneda", "Brandt", "Hendricks", "Rodriguez", "Whitaker", "Strong", "Dillon", "Manning",
+      "Sanchez", "Armstrong", "Clay", "Richmond", "Pittman", "Hooper", "Strickland", "Wiggins",
+      "Santana", "Shaw", "Bryan", "Davila", "Mullins", "Archer", "Avila", "Turner", "Curtis",
+      "Mckee", "Hopkins", "Moody", "Herrera", "Wagner", "Wiley", "Brennan", "Black", "Brown",
+      "Schroeder", "Yates", "Downs", "Schmitt", "Preston", "Berg", "Dalton", "Sims", "Crane",
+      "Buchanan", "Leonard", "Bender", "Carpenter", "Fischer", "Berger", "Greene", "Rice", "Hebert",
+      "Shelton", "Espinoza", "Jennings", "Watson", "Carroll", "Mcdaniel", "Compton", "Molina",
+      "Kaufman", "Lopez", "Collier", "Garrett", "Conrad", "Stokes", "Baker", "Ayers", "Mejia",
+      "Holland", "Love", "Nielsen", "Mckenzie", "Powers", "Roy", "Whitney", "Smith", "Garner",
+      "Padilla", "Frost", "Singh", "Bradshaw", "Flowers", "Sheppard", "Foster", "Henderson",
+      "Glass", "Sparks", "Clark", "Parks", "Bradford", "Giles", "Webster", "Hull", "Walker",
+      "Logan", "Mcmahon", "Mata", "Watkins", "Huber", "Patterson", "Case", "Jordan", "Fitzpatrick",
+      "Howell", "Monroe", "Velasquez", "Ware", "Porter", "Potts", "Swanson", "Estes", "Steele",
+      "Conner", "Kidd", "Dunn", "Yoder", "Shepherd", "Benitez", "Mclaughlin", "English", "Li",
+      "Rollins", "Bray", "Malone", "Matthews", "Ellis", "Campbell", "Roach", "Perkins", "Bryant",
+      "Campos", "Klein", "Lozano", "Rowe", "Brock", "Jordan", "Mercer", "Robinson", "Ewing",
+      "Duncan"
+  };
+
   private String generateName(Random rand, Long teamId) {
     return adjs[rand.ints(1, 0, adjs.length).findFirst().getAsInt()] + " " +
         nouns[rand.ints(1, 0, nouns.length).findFirst().getAsInt()];
+  }
+
+  private String generatePlayerName(Random rand) {
+    return firstNames[rand.ints(1, 0, firstNames.length).findFirst().getAsInt()] + " " +
+        lastNames[rand.ints(1, 0, lastNames.length).findFirst().getAsInt()];
   }
 
 }

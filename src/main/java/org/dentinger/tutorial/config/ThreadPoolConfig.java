@@ -20,8 +20,7 @@ public class ThreadPoolConfig {
     return threadFactory;
   }
 
-
-  public  ThreadFactory getLeagueThreadFactory() {
+  public ThreadFactory getLeagueThreadFactory() {
     return new ThreadFactoryBuilder()
         .setNameFormat("leagueLoader-%d")
         .setDaemon(true)
@@ -69,5 +68,24 @@ public class ThreadPoolConfig {
     return taskExecutor;
   }
 
+  @Bean(name = "personProcessorThreadPool")
+  public ThreadPoolTaskExecutor getPersonProcessorThreadPool(Environment applicationProperties) {
+    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+    taskExecutor.setAllowCoreThreadTimeOut(false);
+
+    taskExecutor
+        .setCorePoolSize(
+            Integer.valueOf(applicationProperties.getProperty("persons.threads.size.core")));
+    taskExecutor.setMaxPoolSize(
+        Integer.valueOf(applicationProperties.getProperty("persons.threads.size.maxpool")));
+    taskExecutor.setQueueCapacity(
+        Integer.valueOf(applicationProperties.getProperty("persons.threads.queue.capacity")));
+    taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    taskExecutor.setThreadFactory(getLeagueThreadFactory());
+    taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+
+    return taskExecutor;
+  }
 
 }

@@ -37,6 +37,8 @@ public class Neo4jDemoApplication {
       }
       if (list.contains("cleanup")) {
         service.cleanup();
+        nodeFirstNeo4jLoaderService.cleanup();
+
       }
     };
   }
