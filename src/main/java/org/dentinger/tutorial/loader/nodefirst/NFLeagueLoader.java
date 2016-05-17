@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
@@ -12,13 +13,13 @@ import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
+import org.dentinger.tutorial.util.RetriableTask;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -133,15 +134,10 @@ public class NFLeagueLoader {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", leagues);
     try {
-      neo4jTemplate.execute(cypher, map);
-      recordsWritten.addAndGet(size);
-    } catch (DataRetrievalFailureException e) {
-      logger.info("Deadlock detected, trying again in 500ms");
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException e1) {
-        logger.info("Thread interupted");
-      }
+      new RetriableTask().retries(3).delay(50, TimeUnit.MILLISECONDS).execute(() -> {
+        neo4jTemplate.execute(cypher, map);
+        recordsWritten.addAndGet(size);
+      });
     } catch (Exception e) {
       aeLogger
           .error("Unable to update graph, leagueCount={}", size,

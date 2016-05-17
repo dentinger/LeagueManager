@@ -5,6 +5,7 @@ import java.util.List;
 import org.dentinger.tutorial.loader.NodeIndexes;
 import org.dentinger.tutorial.service.Neo4jLoaderService;
 import org.dentinger.tutorial.service.NodeFirstNeo4jLoaderService;
+import org.neo4j.ogm.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -25,7 +26,9 @@ public class Neo4jDemoApplication {
 
   @Bean CommandLineRunner runLoader(Neo4jLoaderService service,
                                     NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService,
+                                    Session session,
                                     NodeIndexes nodeIndexes) {
+    session.purgeDatabase();
     nodeIndexes.createIndexes();
     return args -> {
       List<String> list = Arrays.asList(args);
