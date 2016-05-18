@@ -10,6 +10,7 @@ import org.neo4j.ogm.annotation.Relationship;
 
 @NodeEntity
 public class Person {
+
   @GraphId
   private UUID id;
 

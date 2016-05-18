@@ -1,23 +1,26 @@
 buildscript {
 	ext {
-		springBootVersion = '1.3.3.RELEASE'
+		springBootVersion = '1.3.5.RELEASE'
 	}
 	repositories {
 		mavenCentral()
 	}
 	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") 
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("io.spring.gradle:dependency-management-plugin:0.4.0.RELEASE")
 	}
 }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'spring-boot' 
+apply plugin: 'spring-boot'
+apply plugin: 'io.spring.dependency-management'
 
 jar {
 	baseName = 'neo4j-demo'
 	version = '0.0.1-SNAPSHOT'
 }
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -25,22 +28,19 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom 'org.springframework.data:spring-data-releasetrain:Hopper-SR1'
+	}
+}
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-rest')
 	compile('org.springframework.boot:spring-boot-devtools')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.data:spring-data-neo4j:4.1.1.RELEASE')
+	compile('com.google.guava:guava:19.0')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
-
-	compile('org.springframework.data:spring-data-neo4j:4.0.0.RELEASE') {
-		// yikes, really sdn4?
-		exclude group: "org.eclipse.jetty", module: "jetty-server"
-		exclude group: "org.eclipse.jetty", module: "jetty-webapp"
-		exclude group: "commons-logging"
-		exclude group: "ch.qos.logback"
-		exclude group: "org.slf4j"
-		exclude group: 'log4j'
-	}
 }
 
 

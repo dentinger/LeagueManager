@@ -2,7 +2,6 @@ package org.dentinger.tutorial.loader.combinedunwind;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class LeagueLoader {
   private static Logger logger = LoggerFactory.getLogger(LeagueLoader.class);
-  private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
@@ -47,11 +44,9 @@ public class LeagueLoader {
       "match (l:League) detach delete l";
 
   @Autowired
-  public LeagueLoader(Neo4jProperties neo4jProperties,
-                      SessionFactory sessionFactory,
+  public LeagueLoader(SessionFactory sessionFactory,
                       SportsBallRepository repo,
                       Environment env) {
-    this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
@@ -102,9 +97,7 @@ public class LeagueLoader {
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
-    Session session = sessionFactory.openSession(neo4jProperties.getUrl(),
-        neo4jProperties.getUsername(), neo4jProperties.getPassword());
-
+    Session session = sessionFactory.openSession();
     return new Neo4jTemplate(session);
   }
 

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.Person;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Component;
 public class NFPersonLoader {
 
   private static Logger logger = LoggerFactory.getLogger(NFPersonLoader.class);
-  private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
@@ -41,11 +39,9 @@ public class NFPersonLoader {
 
   @Autowired
   public NFPersonLoader(ThreadPoolTaskExecutor personProcessorThreadPool,
-                        Neo4jProperties neo4jProperties,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env) {
-    this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("persons.loading.threads", "1"));
@@ -107,8 +103,7 @@ public class NFPersonLoader {
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
-    Session session = sessionFactory.openSession(neo4jProperties.getUrl(),
-        neo4jProperties.getUsername(), neo4jProperties.getPassword());
+    Session session = sessionFactory.openSession();
 
     return new Neo4jTemplate(session);
   }

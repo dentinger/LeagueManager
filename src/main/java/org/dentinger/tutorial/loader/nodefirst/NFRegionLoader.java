@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class NFRegionLoader {
   private static Logger logger = LoggerFactory.getLogger(NFRegionLoader.class);
-  private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
@@ -39,11 +37,9 @@ public class NFRegionLoader {
           "  on match set r.name = q.name";
 
   @Autowired
-  public NFRegionLoader(Neo4jProperties neo4jProperties,
-                        SessionFactory sessionFactory,
+  public NFRegionLoader(SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env) {
-    this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads", "1"));
@@ -82,9 +78,7 @@ public class NFRegionLoader {
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
-    Session session = sessionFactory.openSession(neo4jProperties.getUrl(),
-        neo4jProperties.getUsername(), neo4jProperties.getPassword());
-
+    Session session = sessionFactory.openSession();
     return new Neo4jTemplate(session);
   }
 
