@@ -1,14 +1,20 @@
 package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
+import org.dentinger.tutorial.domain.League;
+import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
+import org.dentinger.tutorial.util.RetriableTask;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
@@ -35,7 +41,7 @@ public class NFTeamLoader {
           + "merge (t:Team {id: team.id}) "
           + " on create set t.name = team.name ";
 
-  private String MERGER_TEAM_TO_LEAGUE =
+  private String MERGE_TEAM_RELATIONSHIPS =
       " UNWIND {json} AS league "
           + "unwind league.teams as team "
           + "match (l:League {id: league.id}) "
@@ -58,24 +64,56 @@ public class NFTeamLoader {
     this.poolTaskExecutor = teamProcessorThreadPool;
   }
 
-  public void loadTeams() {
+  public void loadTeamNodes() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
 
     List<Team> teamList = repo.getTeams();
-
     logger.info("About to load {} Teams using {} threads", teamList.size(), numThreads);
     recordsWritten.set(0);
 
     int subListSize = (int) Math.floor(teamList.size() / numThreads);
     long start = System.currentTimeMillis();
     Lists.partition(teamList, subListSize).stream().parallel()
-        .forEach((sublist) -> {
-
-          processTeamsInDB(aeLogger, sublist);
+        .forEach((teams) -> {
+          doSubmitableWork(aeLogger, teams, MERGE_TEAM_NODES);
 
         });
+    monitorThreadPool();
+    logger.info("Processing of {} Teams using {} threads complete: {}ms", recordsWritten.get(),
+        numThreads,
+        System.currentTimeMillis() - start);
+  }
+
+  public void loadTeamRelationships() {
+    AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
+    List<League> leagues = repo.getLeagues();
+    logger.info("About to load Team relationships using {} threads",numThreads);
+    recordsWritten.set(0);
+
+    int subListSize = (int) Math.floor(leagues.size() / numThreads);
+    long start = System.currentTimeMillis();
+
+    Lists.partition(leagues, subListSize).stream().parallel()
+        .forEach((leagueSubList) -> {
+          List<Team> teams = leagueSubList.stream()
+              .map(league -> repo.getTeams(league))
+              .flatMap(l -> l.orElse(Collections.emptyList()).stream()).
+                  collect(Collectors.toList());
+
+          doSubmitableWork(aeLogger, teams, MERGE_TEAM_RELATIONSHIPS);
+
+        });
+    monitorThreadPool();
+    logger
+        .info("Processing of {} Team relationships using {} threads complete: {}ms",
+            recordsWritten.get(), numThreads,
+            System.currentTimeMillis() - start);
+  }
+
+  private void monitorThreadPool() {
     while (poolTaskExecutor.getPoolSize() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}", poolTaskExecutor.getActiveCount(),
+      logger.info("Currently running threads: {}, jobs still in pool {}",
+          poolTaskExecutor.getActiveCount(),
           poolTaskExecutor.getPoolSize());
       try {
         Thread.sleep(250);
@@ -83,23 +121,27 @@ public class NFTeamLoader {
         e.printStackTrace();
       }
     }
-    logger.info("Processing of {} Team relationships complete: {}ms", recordsWritten.get(),
-        System.currentTimeMillis() - start);
   }
 
   @Async("teamProcessorThreadPool")
-  private void processTeamsInDB(AggregateExceptionLogger aeLogger, List<Team> sublist) {
+  private void doSubmitableWork(AggregateExceptionLogger aeLogger,
+                                List<Team> teams,
+                                String cypher) {
     Neo4jTemplate
         neo4jTemplate = getNeo4jTemplate();
+
+    logger.info("About to process {} teams ", teams.size());
     Map<String, Object> map = new HashMap<String, Object>();
-    map.put("json", sublist);
+    map.put("json", teams);
     try {
-      neo4jTemplate.execute(MERGE_TEAM_NODES, map);
-      recordsWritten.addAndGet(sublist.size());
+      //new RetriableTask().retries(3).delay(50, TimeUnit.MILLISECONDS).execute(() -> {
+        neo4jTemplate.execute(cypher, map);
+        recordsWritten.addAndGet(teams.size());
+      //});
     } catch (Exception e) {
       aeLogger
-          .error("Unable to update graph, teamCount={}",
-              sublist.size(), e);
+          .error("Unable to update graph, leagueCount={}", teams.size(),
+              e);
     }
   }
 

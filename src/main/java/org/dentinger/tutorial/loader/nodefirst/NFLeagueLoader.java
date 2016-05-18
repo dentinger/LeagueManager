@@ -35,13 +35,13 @@ public class NFLeagueLoader {
   private final AtomicLong recordsWritten = new AtomicLong(0);
   private ThreadPoolTaskExecutor poolTaskExecutor;
 
-  private String MERGE_LEAGUES_NODE =
+  private String MERGE_LEAGUE_NODES =
       "unwind {json} as league "
           + "unwind league.regions as region "
           + "    merge (l:League {id: league.id})"
           + "     on create set l.name = league.name ";
 
-  private String MERGE_LEAGUES_RELATIONSHIPS =
+  private String MERGE_LEAGUE_RELATIONSHIPS =
       "unwind {json} as league "
           + "unwind league.regions as region "
           + "   match (r:Region {id: region.id})"
@@ -72,7 +72,7 @@ public class NFLeagueLoader {
     long start = System.currentTimeMillis();
     Lists.partition(leagueList, subListSize).stream().parallel()
         .forEach((leagues) -> {
-          doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_NODE);
+          doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_NODES);
 
         });
     monitorThreadPool();
@@ -84,9 +84,7 @@ public class NFLeagueLoader {
   public void loadLeagueRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Region> regions = repo.getRegions();
-    List<League> leagueList = repo.getLeagues();
-    logger.info("About to load {} Leagues relationships using threads", leagueList.size(),
-        numThreads);
+    logger.info("About to load League relationships using {} threads",numThreads);
     recordsWritten.set(0);
 
     int subListSize = (int) Math.floor(regions.size() / numThreads);
@@ -99,12 +97,12 @@ public class NFLeagueLoader {
               .flatMap(l -> l.orElse(Collections.emptyList()).stream()).
                   collect(Collectors.toList());
 
-          doSubmitableWork(aeLogger, leagues, leagues.size(), MERGE_LEAGUES_RELATIONSHIPS);
+          doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_RELATIONSHIPS);
 
         });
     monitorThreadPool();
     logger
-        .info("Processing of {} League relationships using [] threads complete: {}ms",
+        .info("Processing of {} League relationships using {} threads complete: {}ms",
             recordsWritten.get(), numThreads,
             System.currentTimeMillis() - start);
   }
@@ -125,22 +123,21 @@ public class NFLeagueLoader {
   @Async("leagueProcessorThreadPool")
   private void doSubmitableWork(AggregateExceptionLogger aeLogger,
                                 List<League> leagues,
-                                int size,
                                 String cypher) {
     Neo4jTemplate
         neo4jTemplate = getNeo4jTemplate();
 
-    logger.info("About to process {} leagues ", size);
+    logger.info("About to process {} leagues ", leagues.size());
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", leagues);
     try {
       new RetriableTask().retries(3).delay(50, TimeUnit.MILLISECONDS).execute(() -> {
         neo4jTemplate.execute(cypher, map);
-        recordsWritten.addAndGet(size);
+        recordsWritten.addAndGet(leagues.size());
       });
     } catch (Exception e) {
       aeLogger
-          .error("Unable to update graph, leagueCount={}", size,
+          .error("Unable to update graph, leagueCount={}", leagues.size(),
               e);
     }
   }

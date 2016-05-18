@@ -45,7 +45,8 @@ public class SportsBallRepository {
   }
 
   public Optional<List<League>> getLeagues(Region region) {
-    return Optional.of(leagueMap.get(region.getId()));
+
+    return Optional.ofNullable(leagueMap.get(region.getId()));
   }
 
   public List<Team> getTeams() {
@@ -55,7 +56,7 @@ public class SportsBallRepository {
 
   public Optional<List<Team>> getTeams(League league) {
 
-    return Optional.of(teamMap.get(league.getId()));
+    return Optional.ofNullable(teamMap.get(league.getId()));
   }
 
   public List<Person> getPersons() {
@@ -65,7 +66,7 @@ public class SportsBallRepository {
 
   public Optional<List<Person>> getPersons(Team team) {
 
-    return Optional.of(personMap.get(team.getId()));
+    return Optional.ofNullable(personMap.get(team.getId()));
   }
 
   private void init() {
