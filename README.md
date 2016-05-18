@@ -65,6 +65,11 @@ relationship statement.
               + "    match (l:League {id: league.id})"
               + "    merge (r)-[:SANCTION]-(l)";
 
+## Handling large data and deadlocks
+As part of the process of loading large (or even small to medium) amounts of data into Neo4j the dreaded deadlock can be encountered.
+
+*TODO* add documentation on deadlock approach.
+
 ## How to use
 
 There are a handful of properties that drive the loading of data in LeagueManager.  All of these can be set/updated in the application.yml file.
