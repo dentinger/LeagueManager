@@ -129,7 +129,7 @@ public class NFTeamLoader {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", teams);
     try {
-      new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS).execute(() -> {
+      new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS).step(500, TimeUnit.MILLISECONDS).execute(() -> {
         neo4jTemplate.execute(cypher, map);
         recordsWritten.addAndGet(teams.size());
       });

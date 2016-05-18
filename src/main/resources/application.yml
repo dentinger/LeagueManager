@@ -1,3 +1,7 @@
+logging:
+  level:
+    org.neo4j.ogm: WARN
+
 regions:
   count: 20
   loading.threads: 1
