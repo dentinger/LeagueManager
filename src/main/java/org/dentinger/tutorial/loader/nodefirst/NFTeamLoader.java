@@ -8,10 +8,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
-import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.dentinger.tutorial.util.RetriableTask;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class NFTeamLoader {
   private static Logger logger = LoggerFactory.getLogger(NFTeamLoader.class);
-  private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
@@ -53,11 +50,9 @@ public class NFTeamLoader {
 
   @Autowired
   public NFTeamLoader(ThreadPoolTaskExecutor teamProcessorThreadPool,
-                      Neo4jProperties neo4jProperties,
                       SessionFactory sessionFactory,
                       SportsBallRepository repo,
                       Environment env) {
-    this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("teams.loading.threads", "1"));
@@ -146,10 +141,7 @@ public class NFTeamLoader {
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
-    Session session = sessionFactory.openSession(neo4jProperties.getUrl(),
-        neo4jProperties.getUsername(), neo4jProperties.getPassword());
-
+    Session session = sessionFactory.openSession();
     return new Neo4jTemplate(session);
   }
-
 }

@@ -1,10 +1,3 @@
-neo4j:
-  url: http://localhost:7474/
-  username: neo4j
-  password: blah
-  packages:
-    - org.dentinger.tutorial.domain
-
 regions:
   count: 20
   loading.threads: 1

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import org.dentinger.tutorial.autoconfig.Neo4jProperties;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Region;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class NFLeagueLoader {
   private static Logger logger = LoggerFactory.getLogger(NFLeagueLoader.class);
-  private Neo4jProperties neo4jProperties;
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
@@ -50,11 +48,9 @@ public class NFLeagueLoader {
 
   @Autowired
   public NFLeagueLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
-                        Neo4jProperties neo4jProperties,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env) {
-    this.neo4jProperties = neo4jProperties;
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
@@ -143,10 +139,7 @@ public class NFLeagueLoader {
   }
 
   private Neo4jTemplate getNeo4jTemplate() {
-    Session session = sessionFactory.openSession(neo4jProperties.getUrl(),
-        neo4jProperties.getUsername(), neo4jProperties.getPassword());
-
+    Session session = sessionFactory.openSession();
     return new Neo4jTemplate(session);
   }
-
 }
