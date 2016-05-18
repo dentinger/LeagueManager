@@ -39,14 +39,14 @@ public class NFTeamLoader {
   private String MERGE_TEAM_NODES =
       "unwind {json} as team "
           + "merge (t:Team {id: team.id}) "
-          + " on create set t.name = team.name ";
+          + "on create set t.name = team.name ";
 
   private String MERGE_TEAM_RELATIONSHIPS =
-      " UNWIND {json} AS league "
-          + "unwind league.teams as team "
+      " UNWIND {json} AS team "
+          + "unwind team.leagues as league "
           + "match (l:League {id: league.id}) "
           + "match (t:Team {id: team.id}) "
-          + " merge(t)-[:MEMBERSHIP]-(l) ";
+          + "merge(t)-[:MEMBERSHIP]-(l) ";
 
   private String CLEAN_UP =
       "match (t:Team) detach delete t";
@@ -134,10 +134,10 @@ public class NFTeamLoader {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", teams);
     try {
-      //new RetriableTask().retries(3).delay(50, TimeUnit.MILLISECONDS).execute(() -> {
+      new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS).execute(() -> {
         neo4jTemplate.execute(cypher, map);
         recordsWritten.addAndGet(teams.size());
-      //});
+      });
     } catch (Exception e) {
       aeLogger
           .error("Unable to update graph, leagueCount={}", teams.size(),

@@ -20,7 +20,7 @@ leagues:
     queue:
       capacity: 200
 teams:
-  count: 500000
+  count: 100000
   loading.threads: 100
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
