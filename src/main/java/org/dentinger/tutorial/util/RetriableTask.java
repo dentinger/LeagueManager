@@ -42,11 +42,11 @@ public class RetriableTask {
           try {
             sleep(i);
           } catch (Exception e2) {
-            logger.debug("totalFails={}",totalFails.incrementAndGet());
+            logger.error("totalFails={}",totalFails.incrementAndGet());
             throw e2;
           }
         } else {
-          logger.debug("totalFails={}",totalFails.incrementAndGet());
+          logger.error("totalFails={}",totalFails.incrementAndGet());
           throw e;
         }
       }
@@ -63,11 +63,11 @@ public class RetriableTask {
           try {
             sleep(i);
           } catch (Exception e2) {
-            logger.debug("totalFails={}",totalFails.incrementAndGet());
+            logger.error("totalFails={}",totalFails.incrementAndGet());
             throw e2;
           }
         } else {
-          logger.debug("totalFails={}",totalFails.incrementAndGet());
+          logger.error("totalFails={}",totalFails.incrementAndGet());
           throw e;
         }
       }
@@ -77,7 +77,7 @@ public class RetriableTask {
 
   private void sleep(int numRetry) throws Exception {
     long sleep = delay + ((step != 0)? ThreadLocalRandom.current().nextLong(step)*numRetry:0);
-    logger.debug("Delaying {}ms before retrying, totalRetries={}",sleep, totalRetries.incrementAndGet());
+    logger.warn("Delaying {}ms before retrying, totalRetries={}",sleep, totalRetries.incrementAndGet());
     Thread.sleep(sleep);
   }
 }
