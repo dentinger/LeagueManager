@@ -106,7 +106,7 @@ public class NFPersonLoader {
           ((ThreadPoolTaskExecutor) poolTaskExecutor).getPoolSize(),
           ((ThreadPoolTaskExecutor) poolTaskExecutor).getKeepAliveSeconds());
       try {
-        Thread.sleep(250);
+        Thread.sleep(5000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

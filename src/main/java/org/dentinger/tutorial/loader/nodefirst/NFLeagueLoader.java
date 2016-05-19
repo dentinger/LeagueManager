@@ -113,7 +113,7 @@ public class NFLeagueLoader {
           ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize(),
           ( (ThreadPoolTaskExecutor)poolTaskExecutor).getKeepAliveSeconds());
       try {
-        Thread.sleep(250);
+        Thread.sleep(1000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
