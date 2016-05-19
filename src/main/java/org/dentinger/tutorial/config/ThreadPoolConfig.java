@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
+@EnableAsync
 public class ThreadPoolConfig {
 
   public ThreadFactory getTeamThreadFactory() {
@@ -50,6 +52,7 @@ public class ThreadPoolConfig {
     taskExecutor.setQueueCapacity(
         Integer.valueOf(applicationProperties.getProperty("teams.threads.queue.capacity")));
     taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    taskExecutor.setKeepAliveSeconds(5);
     taskExecutor.setThreadFactory(getTeamThreadFactory());
     taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
 
@@ -70,6 +73,7 @@ public class ThreadPoolConfig {
     taskExecutor.setQueueCapacity(
         Integer.valueOf(applicationProperties.getProperty("leagues.threads.queue.capacity")));
     taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    taskExecutor.setKeepAliveSeconds(5);
     taskExecutor.setThreadFactory(getLeagueThreadFactory());
     taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
 
@@ -90,6 +94,7 @@ public class ThreadPoolConfig {
     taskExecutor.setQueueCapacity(
         Integer.valueOf(applicationProperties.getProperty("persons.threads.queue.capacity")));
     taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    taskExecutor.setKeepAliveSeconds(5);
     taskExecutor.setThreadFactory(getPersonThreadFacrory());
     taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
 

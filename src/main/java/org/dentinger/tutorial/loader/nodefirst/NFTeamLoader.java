@@ -101,10 +101,11 @@ public class NFTeamLoader {
   }
 
   private void monitorThreadPool() {
-    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}",
+    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount() > 0) {
+      logger.info("Currently running threads: {}, jobs still in pool {}, KeepAlive time: {}",
           ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize(),
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getKeepAliveSeconds());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {

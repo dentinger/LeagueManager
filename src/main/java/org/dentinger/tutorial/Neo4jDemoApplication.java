@@ -5,7 +5,6 @@ import java.util.List;
 import org.dentinger.tutorial.loader.NodeIndexes;
 import org.dentinger.tutorial.service.Neo4jLoaderService;
 import org.dentinger.tutorial.service.NodeFirstNeo4jLoaderService;
-import org.neo4j.ogm.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -26,24 +25,26 @@ public class Neo4jDemoApplication {
 
   @Bean CommandLineRunner runLoader(Neo4jLoaderService service,
                                     NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService,
-                                    Session session,
                                     NodeIndexes nodeIndexes) {
     return args -> {
+      logger.debug("Running LeagueManager loading process");
       List<String> list = Arrays.asList(args);
       if (!list.contains("nodeFirst")) {
-        if( list.contains("cleanup")) {
-          service.cleanup();
+        if (list.contains("cleanup")) {
+          nodeFirstNeo4jLoaderService.cleanup();
         }
         nodeIndexes.createIndexes();
         service.runCombinedUnwindLoader(list);
       }
       if (list.contains("nodeFirst")) {
-        if( list.contains("cleanup")) {
+        if (list.contains("cleanup")) {
           nodeFirstNeo4jLoaderService.cleanup();
         }
         nodeIndexes.createIndexes();
         nodeFirstNeo4jLoaderService.runLoader(list);
       }
+      logger
+          .debug("Compeleted LeagueManager loading process -------  Enjoy your SPORTSBALL Season ");
     };
   }
 

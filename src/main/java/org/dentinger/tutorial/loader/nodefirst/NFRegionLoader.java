@@ -93,7 +93,7 @@ public class NFRegionLoader {
 
   private ExecutorService getExecutorService(int numThreads) {
     final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-        .setNameFormat("regionLoader-nodefirst-%d")
+        .setNameFormat("NFRegion-%d")
         .setDaemon(true)
         .build();
     return Executors.newFixedThreadPool(numThreads, threadFactory);

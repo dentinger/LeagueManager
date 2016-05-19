@@ -41,7 +41,7 @@ public class NFPersonLoader {
       "match (p:Person) detach delete p";
 
   @Autowired
-  public NFPersonLoader(TaskExecutor leagueProcessorThreadPool,
+  public NFPersonLoader(TaskExecutor personProcessorThreadPool,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env, PersonWorker personWorker) {
@@ -49,7 +49,7 @@ public class NFPersonLoader {
     this.repo = repo;
     this.personWorker = personWorker;
     this.numThreads = Integer.valueOf(env.getProperty("persons.loading.threads", "1"));
-    this.poolTaskExecutor = leagueProcessorThreadPool;
+    this.poolTaskExecutor = personProcessorThreadPool;
   }
 
   public void cleanup(){
@@ -100,10 +100,11 @@ public class NFPersonLoader {
   }
 
   private void monitorThreadPool() {
-    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}",
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
+    while (((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount() > 0) {
+      logger.info("Currently running threads: {}, jobs still in pool {}, KeepAlive time: {}",
+          ((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount(),
+          ((ThreadPoolTaskExecutor) poolTaskExecutor).getPoolSize(),
+          ((ThreadPoolTaskExecutor) poolTaskExecutor).getKeepAliveSeconds());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {

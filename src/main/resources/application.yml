@@ -13,29 +13,29 @@ leagues:
   maxRegionAffiliations: 3
   threads:
     size:
-      core: 2
-      maxpool: 10
+      core: 0
+      maxpool: 20
     queue:
       capacity: 200
 teams:
-  count: 1000
-  loading.threads: 200
+  count: 100000
+  loading.threads: 20000
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8
   maxPlayersPerTeam: 23
   threads:
       size:
-        core: 5
+        core: 0
         maxpool: 20
       queue:
         capacity: 20000
 
 persons:
-  loading.threads: 200
+  loading.threads: 20000
   threads:
     size:
-      core: 2
+      core: 0
       maxpool: 20
     queue:
       capacity: 20000

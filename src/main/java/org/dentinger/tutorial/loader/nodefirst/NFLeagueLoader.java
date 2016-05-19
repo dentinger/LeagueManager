@@ -1,18 +1,11 @@
 package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
-import org.dentinger.tutorial.domain.Region;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
-import org.dentinger.tutorial.util.RetriableTask;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
@@ -21,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +25,8 @@ public class NFLeagueLoader {
   private int numThreads;
   private final AtomicLong recordsWritten = new AtomicLong(0);
   private TaskExecutor poolTaskExecutor;
+  private LeagueWorker leagueWorker;
+
 
   private String MERGE_LEAGUE_NODES =
       "unwind {json} as league "
@@ -54,9 +48,10 @@ public class NFLeagueLoader {
   public NFLeagueLoader(TaskExecutor leagueProcessorThreadPool,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
-                        Environment env) {
+                        Environment env, LeagueWorker leagueWorker) {
     this.sessionFactory = sessionFactory;
     this.repo = repo;
+    this.leagueWorker = leagueWorker;
     this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
     this.poolTaskExecutor = leagueProcessorThreadPool;
   }
@@ -78,7 +73,7 @@ public class NFLeagueLoader {
     long start = System.currentTimeMillis();
     Lists.partition(leagueList, subListSize).stream().parallel()
         .forEach((leagues) -> {
-          doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_NODES);
+          leagueWorker.doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_NODES);
 
         });
     monitorThreadPool();
@@ -101,7 +96,7 @@ public class NFLeagueLoader {
         .forEach((leagueSubList) -> {
 
 
-          doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_RELATIONSHIPS);
+          leagueWorker.doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_RELATIONSHIPS);
 
         });
     monitorThreadPool();
@@ -112,37 +107,16 @@ public class NFLeagueLoader {
   }
 
   private void monitorThreadPool() {
-    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}",
+    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount() > 0) {
+      logger.info("Currently running threads: {}, jobs still in pool {}, KeepAlive time: {}",
           ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize(),
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getKeepAliveSeconds());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-    }
-  }
-
-  @Async("leagueProcessorThreadPool")
-  private void doSubmitableWork(AggregateExceptionLogger aeLogger,
-                                List<League> leagues,
-                                String cypher) {
-    Neo4jTemplate
-        neo4jTemplate = getNeo4jTemplate();
-
-    logger.debug("About to process {} leagues ", leagues.size());
-    Map<String, Object> map = new HashMap<String, Object>();
-    map.put("json", leagues);
-    try {
-      new RetriableTask().retries(3).delay(50, TimeUnit.MILLISECONDS).execute(() -> {
-        neo4jTemplate.execute(cypher, map);
-        recordsWritten.addAndGet(leagues.size());
-      });
-    } catch (Exception e) {
-      aeLogger
-          .error("Unable to update graph, leagueCount={}", leagues.size(),
-              e);
     }
   }
 
