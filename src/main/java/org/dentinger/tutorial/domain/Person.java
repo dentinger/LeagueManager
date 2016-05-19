@@ -12,7 +12,9 @@ import org.neo4j.ogm.annotation.Relationship;
 public class Person {
 
   @GraphId
-  private UUID id;
+  private Long id;
+
+  private UUID uuid;
 
   private String name;
 
@@ -21,24 +23,27 @@ public class Person {
   @Relationship(type = "PLAYSON")
   Set<Team> playson;
 
-  @Relationship(type = "COACHES")
-  Set<Team> coaches;
-
-  @Relationship(type = "FANOF")
-  Set<Team> follows;
-
-  public Person(UUID id, String name){
+  public Person(Long id, UUID uuid, String name){
     this.id = id;
+    this.uuid = uuid;
     this.name = name;
     this.playson = new HashSet<>();
   }
 
-  public UUID getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(UUID id) {
+  public void setId(Long id) {
     this.id = id;
+  }
+
+  public UUID getUuid() {
+    return uuid;
+  }
+
+  public void setUuid(UUID uuid) {
+    this.uuid = uuid;
   }
 
   public String getName() {
@@ -65,30 +70,17 @@ public class Person {
     this.playson = playson;
   }
 
-  public Set<Team> getCoaches() {
-    return coaches;
-  }
-
-  public void setCoaches(Set<Team> coaches) {
-    this.coaches = coaches;
-  }
-
-  public Set<Team> getFollows() {
-    return follows;
-  }
-
-  public void setFollows(Set<Team> follows) {
-    this.follows = follows;
-  }
-
   public void addTeam(Team team){
     playson.add(team);
   }
 
   @Override public String toString() {
     return "Person{" +
-        "id=" + id.toString() +
+        "id=" + id +
+        ", uuid='" + uuid + '\'' +
         ", name='" + name + '\'' +
+        ", dateOfBirth=" + dateOfBirth +
+        ", playson count=" + playson.size() +
         '}';
   }
 }

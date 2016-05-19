@@ -13,18 +13,17 @@ public class NodeIndexes {
   private static Logger logger = LoggerFactory.getLogger(NodeIndexes.class);
   private Neo4jOperations neo4jTemplate;
 
-  private static final String TEAM_INDEX = "CREATE INDEX on :Team(id)";
-  private static final String LEAGUE_INDEX = "CREATE INDEX on :League(id)";
-  private static final String REGION_INDEX = "CREATE INDEX on :Region(id)";
-
   @Autowired
   public NodeIndexes(Neo4jOperations neo4jTemplate) {
     this.neo4jTemplate = neo4jTemplate;
   }
 
   public void createIndexes() {
-    neo4jTemplate.execute(TEAM_INDEX);
-    neo4jTemplate.execute(LEAGUE_INDEX);
-    neo4jTemplate.execute(REGION_INDEX);
+    neo4jTemplate.execute("CREATE INDEX on :Region(id)");
+    neo4jTemplate.execute("CREATE INDEX on :League(id)");
+    neo4jTemplate.execute("CREATE INDEX on :Team(id)");
+    neo4jTemplate.execute("CREATE INDEX on :Person(id)");
+    neo4jTemplate.execute("CREATE INDEX on :Person(uuid)");
+    logger.info("Creation of indexes complete");
   }
 }

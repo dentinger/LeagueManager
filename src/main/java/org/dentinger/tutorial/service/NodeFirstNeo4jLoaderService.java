@@ -41,7 +41,7 @@ public class NodeFirstNeo4jLoaderService {
       teamLoader.loadTeamNodes();
     }
     if (list.contains("loadPersons")) {
-      personLoader.loadPersons();
+      personLoader.loadPersonNodes();
     }
 
     if (list.contains("loadLeagues")) {
@@ -50,18 +50,18 @@ public class NodeFirstNeo4jLoaderService {
     if (list.contains("loadTeams")) {
       teamLoader.loadTeamRelationships();
     }
+    if (list.contains("loadPersons")) {
+      personLoader.loadPersonRelationships();
+    }
 
     if (list.contains("loadAll")) {
       regionLoader.loadRegions();
       leagueLoader.loadLeagueNodes();
       teamLoader.loadTeamNodes();
+      personLoader.loadPersonNodes();
       leagueLoader.loadLeagueRelationships();
       teamLoader.loadTeamRelationships();
+      personLoader.loadPersonRelationships();
     }
-
-  }
-
-  public void cleanup() {
-    personLoader.cleanup();
   }
 }

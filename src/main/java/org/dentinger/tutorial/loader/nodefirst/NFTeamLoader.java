@@ -135,7 +135,7 @@ public class NFTeamLoader {
       });
     } catch (Exception e) {
       aeLogger
-          .error("Unable to update graph, leagueCount={}", teams.size(),
+          .error("Unable to update graph, teamCount={}", teams.size(),
               e);
     }
   }

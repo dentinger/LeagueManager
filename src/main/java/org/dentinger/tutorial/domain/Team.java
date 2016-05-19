@@ -58,6 +58,7 @@ public class Team {
     return "Team{" +
         "id=" + id +
         ", name='" + name + '\'' +
+        ", league count=" + leagues.size() +
         '}';
   }
 }

@@ -59,4 +59,12 @@ public class League {
   public void addRegion(Region region) {
     regions.add(region);
   }
+
+  @Override public String toString() {
+    return "League{" +
+        "id=" + id +
+        ", name='" + name + '\'' +
+        ", region count=" + regions.size() +
+        '}';
+  }
 }

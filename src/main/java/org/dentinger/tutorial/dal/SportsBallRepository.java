@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -28,6 +29,7 @@ public class SportsBallRepository {
   private Map<Long, List<League>> leagueMap; // key is region id
   private Map<Long, List<Team>> teamMap; // key is league id
   private Map<Long, List<Person>> personMap; // key is team id
+  private static final AtomicLong personIdGenerator = new AtomicLong(0);
 
   @Autowired
   public SportsBallRepository(Environment environment) {
@@ -152,7 +154,7 @@ public class SportsBallRepository {
             .getAsInt();
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
-          Person person = new Person(UUID.randomUUID(), generatePlayerName(rand));
+          Person person = new Person(personIdGenerator.incrementAndGet(), UUID.randomUUID(), generatePlayerName(rand));
           List<Person> persons = personMap.get(team.getId());
           if (persons == null) {
             persons = new ArrayList<Person>();
