@@ -1,6 +1,8 @@
 logging:
   level:
     org.neo4j.ogm: WARN
+    org.dentinger.tutorial.loader.nodefirst: WARN
+
 
 regions:
   count: 20
@@ -18,7 +20,7 @@ leagues:
       capacity: 200
 teams:
   count: 100000
-  loading.threads: 100
+  loading.threads: 20000
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8
@@ -28,7 +30,7 @@ teams:
         core: 5
         maxpool: 20
       queue:
-        capacity: 200
+        capacity: 20000
 
 persons:
   loading.threads: 500
