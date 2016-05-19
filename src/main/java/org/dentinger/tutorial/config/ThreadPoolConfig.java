@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
@@ -28,8 +29,15 @@ public class ThreadPoolConfig {
 
   }
 
+  public ThreadFactory getPersonThreadFacrory() {
+    return new ThreadFactoryBuilder()
+        .setNameFormat("personLoader-%d")
+        .setDaemon(true)
+        .build();
+  }
+
   @Bean(name = "teamProcessorThreadPool")
-  public ThreadPoolTaskExecutor getTeamProcessorThreadPool(Environment applicationProperties) {
+  public TaskExecutor getTeamProcessorThreadPool(Environment applicationProperties) {
     ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
     taskExecutor.setAllowCoreThreadTimeOut(false);
@@ -49,7 +57,7 @@ public class ThreadPoolConfig {
   }
 
   @Bean(name = "leagueProcessorThreadPool")
-  public ThreadPoolTaskExecutor getLeagueProcessorThreadPool(Environment applicationProperties) {
+  public TaskExecutor getLeagueProcessorThreadPool(Environment applicationProperties) {
     ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
     taskExecutor.setAllowCoreThreadTimeOut(false);
@@ -69,7 +77,7 @@ public class ThreadPoolConfig {
   }
 
   @Bean(name = "personProcessorThreadPool")
-  public ThreadPoolTaskExecutor getPersonProcessorThreadPool(Environment applicationProperties) {
+  public TaskExecutor getPersonProcessorThreadPool(Environment applicationProperties) {
     ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
     taskExecutor.setAllowCoreThreadTimeOut(false);
@@ -82,7 +90,7 @@ public class ThreadPoolConfig {
     taskExecutor.setQueueCapacity(
         Integer.valueOf(applicationProperties.getProperty("persons.threads.queue.capacity")));
     taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-    taskExecutor.setThreadFactory(getLeagueThreadFactory());
+    taskExecutor.setThreadFactory(getPersonThreadFacrory());
     taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
 
     return taskExecutor;

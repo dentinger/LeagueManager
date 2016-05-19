@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ public class NFPersonLoader {
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
-  private ThreadPoolTaskExecutor poolTaskExecutor;
+  private TaskExecutor poolTaskExecutor;
   private PersonWorker personWorker;
 
   private String MERGE_PERSON_NODES =
@@ -40,7 +41,7 @@ public class NFPersonLoader {
       "match (p:Person) detach delete p";
 
   @Autowired
-  public NFPersonLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
+  public NFPersonLoader(TaskExecutor leagueProcessorThreadPool,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env, PersonWorker personWorker) {
@@ -99,10 +100,10 @@ public class NFPersonLoader {
   }
 
   private void monitorThreadPool() {
-    while (poolTaskExecutor.getPoolSize() > 0) {
+    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize() > 0) {
       logger.info("Currently running threads: {}, jobs still in pool {}",
-          poolTaskExecutor.getActiveCount(),
-          poolTaskExecutor.getPoolSize());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {

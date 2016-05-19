@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -31,7 +32,7 @@ public class NFLeagueLoader {
   private SportsBallRepository repo;
   private int numThreads;
   private final AtomicLong recordsWritten = new AtomicLong(0);
-  private ThreadPoolTaskExecutor poolTaskExecutor;
+  private TaskExecutor poolTaskExecutor;
 
   private String MERGE_LEAGUE_NODES =
       "unwind {json} as league "
@@ -50,7 +51,7 @@ public class NFLeagueLoader {
       "match (l:League) detach delete l";
 
   @Autowired
-  public NFLeagueLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
+  public NFLeagueLoader(TaskExecutor leagueProcessorThreadPool,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
                         Environment env) {
@@ -88,19 +89,17 @@ public class NFLeagueLoader {
 
   public void loadLeagueRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    List<Region> regions = repo.getRegions();
+    //List<Region> regions = repo.getRegions();
+    List<League> leagues = repo.getLeagues();
     logger.info("About to load League relationships using {} threads",numThreads);
     recordsWritten.set(0);
 
-    int subListSize = (int) Math.floor(regions.size() / numThreads);
+    int subListSize = (int) Math.floor(leagues.size() / numThreads);
     long start = System.currentTimeMillis();
 
-    Lists.partition(regions, subListSize).stream().parallel()
-        .forEach((regionsSubList) -> {
-          List<League> leagues = regionsSubList.stream()
-              .map(region -> repo.getLeagues(region))
-              .flatMap(l -> l.orElse(Collections.emptyList()).stream()).
-                  collect(Collectors.toList());
+    Lists.partition(leagues, subListSize).stream().parallel()
+        .forEach((leagueSubList) -> {
+
 
           doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_RELATIONSHIPS);
 
@@ -113,10 +112,10 @@ public class NFLeagueLoader {
   }
 
   private void monitorThreadPool() {
-    while (poolTaskExecutor.getPoolSize() > 0) {
+    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize() > 0) {
       logger.info("Currently running threads: {}, jobs still in pool {}",
-          poolTaskExecutor.getActiveCount(),
-          poolTaskExecutor.getPoolSize());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {

@@ -2,16 +2,15 @@ package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
-import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,7 @@ public class NFTeamLoader {
   private TeamWorker submitableWorker;
   private int numThreads;
 
-  private ThreadPoolTaskExecutor poolTaskExecutor;
+  private TaskExecutor poolTaskExecutor;
 
   private String MERGE_TEAM_NODES =
       "unwind {json} as team "
@@ -42,7 +41,7 @@ public class NFTeamLoader {
       "match (t:Team) detach delete t";
 
   @Autowired
-  public NFTeamLoader(ThreadPoolTaskExecutor teamProcessorThreadPool,
+  public NFTeamLoader(TaskExecutor teamProcessorThreadPool,
                       SessionFactory sessionFactory,
                       SportsBallRepository repo,
                       Environment env, TeamWorker submitableWorker) {
@@ -102,10 +101,10 @@ public class NFTeamLoader {
   }
 
   private void monitorThreadPool() {
-    while (poolTaskExecutor.getPoolSize() > 0) {
+    while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize() > 0) {
       logger.info("Currently running threads: {}, jobs still in pool {}",
-          poolTaskExecutor.getActiveCount(),
-          poolTaskExecutor.getPoolSize());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {
