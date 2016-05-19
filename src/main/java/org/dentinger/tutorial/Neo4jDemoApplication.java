@@ -31,12 +31,16 @@ public class Neo4jDemoApplication {
     return args -> {
       List<String> list = Arrays.asList(args);
       if (!list.contains("nodeFirst")) {
-        service.cleanup();
+        if( list.contains("cleanup")) {
+          service.cleanup();
+        }
         nodeIndexes.createIndexes();
         service.runCombinedUnwindLoader(list);
       }
       if (list.contains("nodeFirst")) {
-        nodeFirstNeo4jLoaderService.cleanup();
+        if( list.contains("cleanup")) {
+          nodeFirstNeo4jLoaderService.cleanup();
+        }
         nodeIndexes.createIndexes();
         nodeFirstNeo4jLoaderService.runLoader(list);
       }
