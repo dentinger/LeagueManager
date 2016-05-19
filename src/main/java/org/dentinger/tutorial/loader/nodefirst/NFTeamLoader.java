@@ -6,11 +6,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
+import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +51,12 @@ public class NFTeamLoader {
     this.submitableWorker = submitableWorker;
     this.numThreads = Integer.valueOf(env.getProperty("teams.loading.threads", "1"));
     this.poolTaskExecutor = teamProcessorThreadPool;
+  }
+
+  public void cleanup(){
+    logger.info("About to cleanup teams");
+    new Neo4jTemplate(sessionFactory.openSession()).execute(CLEAN_UP);
+    logger.info("Cleanup of teams complete");
   }
 
   public void loadTeamNodes() {

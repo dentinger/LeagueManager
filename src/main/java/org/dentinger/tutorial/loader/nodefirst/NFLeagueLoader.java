@@ -46,6 +46,9 @@ public class NFLeagueLoader {
           + "    match (l:League {id: league.id})"
           + "    merge (r)-[:SANCTION]-(l)";
 
+  private String CLEAN_UP =
+      "match (l:League) detach delete l";
+
   @Autowired
   public NFLeagueLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
                         SessionFactory sessionFactory,
@@ -55,6 +58,12 @@ public class NFLeagueLoader {
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
     this.poolTaskExecutor = leagueProcessorThreadPool;
+  }
+
+  public void cleanup(){
+    logger.info("About to cleanup leagues");
+    getNeo4jTemplate().execute(CLEAN_UP);
+    logger.info("Cleanup of leagues complete");
   }
 
   public void loadLeagueNodes() {

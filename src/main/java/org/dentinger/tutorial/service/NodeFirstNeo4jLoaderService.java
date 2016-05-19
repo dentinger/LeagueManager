@@ -5,12 +5,14 @@ import org.dentinger.tutorial.loader.nodefirst.NFLeagueLoader;
 import org.dentinger.tutorial.loader.nodefirst.NFPersonLoader;
 import org.dentinger.tutorial.loader.nodefirst.NFRegionLoader;
 import org.dentinger.tutorial.loader.nodefirst.NFTeamLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NodeFirstNeo4jLoaderService {
-
+  private Logger logger = LoggerFactory.getLogger(NodeFirstNeo4jLoaderService.class);
   private NFRegionLoader regionLoader;
   private NFLeagueLoader leagueLoader;
   private NFPersonLoader personLoader;
@@ -27,6 +29,15 @@ public class NodeFirstNeo4jLoaderService {
     this.regionLoader = regionLoader;
     this.personLoader = personLoader;
 
+  }
+
+  public void cleanup(){
+    logger.info("About to cleanup");
+    regionLoader.cleanup();
+    leagueLoader.cleanup();
+    teamLoader.cleanup();
+    personLoader.cleanup();
+    logger.info("Cleanup complete");
   }
 
   public void runLoader(List<String> list) {
@@ -57,10 +68,10 @@ public class NodeFirstNeo4jLoaderService {
     if (list.contains("loadAll")) {
       regionLoader.loadRegions();
       leagueLoader.loadLeagueNodes();
-      teamLoader.loadTeamNodes();
-      personLoader.loadPersonNodes();
       leagueLoader.loadLeagueRelationships();
+      teamLoader.loadTeamNodes();
       teamLoader.loadTeamRelationships();
+      personLoader.loadPersonNodes();
       personLoader.loadPersonRelationships();
     }
   }

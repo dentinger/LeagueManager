@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,9 @@ public class NFPersonLoader {
           + "match (p:Person {id: person.id}) "
           + "merge(t)-[:PLAYSON]-(p) ";
 
+  private String CLEAN_UP =
+      "match (p:Person) detach delete p";
+
   @Autowired
   public NFPersonLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
                         SessionFactory sessionFactory,
@@ -45,6 +49,12 @@ public class NFPersonLoader {
     this.personWorker = personWorker;
     this.numThreads = Integer.valueOf(env.getProperty("persons.loading.threads", "1"));
     this.poolTaskExecutor = leagueProcessorThreadPool;
+  }
+
+  public void cleanup(){
+    logger.info("About to cleanup persons");
+    new Neo4jTemplate(sessionFactory.openSession()).execute(CLEAN_UP);
+    logger.info("Cleanup of persons complete");
   }
 
   public void loadPersonNodes() {

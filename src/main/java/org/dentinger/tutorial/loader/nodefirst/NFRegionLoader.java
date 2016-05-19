@@ -36,6 +36,9 @@ public class NFRegionLoader {
           "  on create set r.name = q.name " +
           "  on match set r.name = q.name";
 
+  private String CLEAN_UP =
+      "match (r:Region) detach delete r";
+
   @Autowired
   public NFRegionLoader(SessionFactory sessionFactory,
                         SportsBallRepository repo,
@@ -43,6 +46,12 @@ public class NFRegionLoader {
     this.sessionFactory = sessionFactory;
     this.repo = repo;
     this.numThreads = Integer.valueOf(env.getProperty("regions.loading.threads", "1"));
+  }
+
+  public void cleanup(){
+    logger.info("About to cleanup regions");
+    getNeo4jTemplate().execute(CLEAN_UP);
+    logger.info("Cleanup of regions complete");
   }
 
   public void loadRegions() {

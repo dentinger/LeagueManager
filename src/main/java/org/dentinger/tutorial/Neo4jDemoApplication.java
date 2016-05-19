@@ -18,7 +18,7 @@ import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 @EnableNeo4jRepositories(basePackages = "org.dentinger.tutorial.repository")
 public class Neo4jDemoApplication {
 
-  private final static Logger log = LoggerFactory.getLogger(Neo4jDemoApplication.class);
+  private final static Logger logger = LoggerFactory.getLogger(Neo4jDemoApplication.class);
 
   public static void main(String[] args) {
     SpringApplication.run(Neo4jDemoApplication.class, args).close();
@@ -28,18 +28,17 @@ public class Neo4jDemoApplication {
                                     NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService,
                                     Session session,
                                     NodeIndexes nodeIndexes) {
-    session.purgeDatabase();
-    nodeIndexes.createIndexes();
     return args -> {
       List<String> list = Arrays.asList(args);
       if (!list.contains("nodeFirst")) {
+        service.cleanup();
+        nodeIndexes.createIndexes();
         service.runCombinedUnwindLoader(list);
       }
       if (list.contains("nodeFirst")) {
+        nodeFirstNeo4jLoaderService.cleanup();
+        nodeIndexes.createIndexes();
         nodeFirstNeo4jLoaderService.runLoader(list);
-      }
-      if (list.contains("cleanup")) {
-        service.cleanup();
       }
     };
   }
