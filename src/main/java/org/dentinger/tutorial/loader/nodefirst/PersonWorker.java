@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.dentinger.tutorial.domain.Team;
+import org.dentinger.tutorial.domain.Person;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
 import org.dentinger.tutorial.util.RetriableTask;
 import org.neo4j.ogm.session.Session;
@@ -18,16 +18,15 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TeamWorker {
+public class PersonWorker {
 
-  private static Logger logger = LoggerFactory.getLogger(NFTeamLoader.class);
+
+  private static Logger logger = LoggerFactory.getLogger(PersonWorker.class);
   private SessionFactory sessionFactory;
-
-
   private final AtomicLong recordsWritten = new AtomicLong(0);
 
   @Autowired
-  public TeamWorker(SessionFactory sessionFactory) {
+  public PersonWorker(SessionFactory sessionFactory) {
 
     this.sessionFactory = sessionFactory;
   }
@@ -37,28 +36,29 @@ public class TeamWorker {
     return new Neo4jTemplate(session);
   }
 
-  @Async("teamProcessorThreadPool")
+  @Async("personProcessorThreadPool")
   public void doSubmitableWork(AggregateExceptionLogger aeLogger,
-                               List<Team> teams,
-                               String cypher) {
+                                List<Person> persons,
+                                String cypher) {
     Neo4jTemplate
         neo4jTemplate = getNeo4jTemplate();
 
-    logger.debug("About to process {} teams ", teams.size());
+    logger.debug("About to process {} persons ", persons.size());
     Map<String, Object> map = new HashMap<String, Object>();
-    map.put("json", teams);
+    map.put("json", persons);
     try {
       new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS)
           .step(500, TimeUnit.MILLISECONDS).execute(() -> {
         neo4jTemplate.execute(cypher, map);
-        recordsWritten.addAndGet(teams.size());
+        recordsWritten.addAndGet(persons.size());
       });
     } catch (Exception e) {
       aeLogger
-          .error("Unable to update graph, teamCount={}", teams.size(),
+          .error("Unable to update graph, personCount={}", persons.size(),
               e);
     }
   }
+
   public AtomicLong getRecordsWritten() {
     return recordsWritten;
   }

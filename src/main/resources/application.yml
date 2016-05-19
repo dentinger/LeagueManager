@@ -1,7 +1,6 @@
 logging:
   level:
     org.neo4j.ogm: WARN
-    org.dentinger.tutorial.loader.nodefirst: WARN
 
 
 regions:
@@ -33,10 +32,10 @@ teams:
         capacity: 20000
 
 persons:
-  loading.threads: 500
+  loading.threads: 20000
   threads:
     size:
       core: 2
       maxpool: 20
     queue:
-      capacity: 600
+      capacity: 20000

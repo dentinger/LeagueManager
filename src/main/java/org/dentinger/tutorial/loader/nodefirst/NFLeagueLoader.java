@@ -123,7 +123,7 @@ public class NFLeagueLoader {
     Neo4jTemplate
         neo4jTemplate = getNeo4jTemplate();
 
-    logger.info("About to process {} leagues ", leagues.size());
+    logger.debug("About to process {} leagues ", leagues.size());
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", leagues);
     try {

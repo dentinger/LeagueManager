@@ -21,7 +21,7 @@ public class NFTeamLoader {
   private SportsBallRepository repo;
   private TeamWorker submitableWorker;
   private int numThreads;
-  private final AtomicLong recordsWritten = new AtomicLong(0);
+
   private ThreadPoolTaskExecutor poolTaskExecutor;
 
   private String MERGE_TEAM_NODES =
@@ -56,7 +56,7 @@ public class NFTeamLoader {
 
     List<Team> teamList = repo.getTeams();
     logger.info("About to load {} Teams using {} threads", teamList.size(), numThreads);
-    recordsWritten.set(0);
+    submitableWorker.getRecordsWritten().set(0);
 
     int subListSize = (int) Math.floor(teamList.size() / numThreads);
     long start = System.currentTimeMillis();
@@ -66,7 +66,7 @@ public class NFTeamLoader {
 
         });
     monitorThreadPool();
-    logger.info("Processing of {} Teams using {} threads complete: {}ms", recordsWritten.get(),
+    logger.info("Processing of {} Teams using {} threads complete: {}ms", submitableWorker.getRecordsWritten().get(),
         numThreads,
         System.currentTimeMillis() - start);
   }
@@ -75,7 +75,7 @@ public class NFTeamLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Team> teamList = repo.getTeams();
     logger.info("About to load Team relationships using {} threads",numThreads);
-    recordsWritten.set(0);
+    submitableWorker.getRecordsWritten().set(0);
 
     int subListSize = (int) Math.floor(teamList.size() / numThreads);
     long start = System.currentTimeMillis();
@@ -89,7 +89,7 @@ public class NFTeamLoader {
     monitorThreadPool();
     logger
         .info("Processing of {} Team relationships using {} threads complete: {}ms",
-            recordsWritten.get(), numThreads,
+            submitableWorker.getRecordsWritten().get(), numThreads,
             System.currentTimeMillis() - start);
   }
 

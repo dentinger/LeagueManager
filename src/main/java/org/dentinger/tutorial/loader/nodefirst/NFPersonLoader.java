@@ -1,27 +1,15 @@
 package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import org.dentinger.tutorial.dal.SportsBallRepository;
-import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.domain.Person;
-import org.dentinger.tutorial.domain.Team;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
-import org.dentinger.tutorial.util.RetriableTask;
-import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.data.neo4j.template.Neo4jTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +20,8 @@ public class NFPersonLoader {
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
-  private final AtomicLong recordsWritten = new AtomicLong(0);
   private ThreadPoolTaskExecutor poolTaskExecutor;
+  private PersonWorker personWorker;
 
   private String MERGE_PERSON_NODES =
       "unwind {json} as person "
@@ -51,10 +39,11 @@ public class NFPersonLoader {
   public NFPersonLoader(ThreadPoolTaskExecutor leagueProcessorThreadPool,
                         SessionFactory sessionFactory,
                         SportsBallRepository repo,
-                        Environment env) {
+                        Environment env, PersonWorker personWorker) {
     this.sessionFactory = sessionFactory;
     this.repo = repo;
-    this.numThreads = Integer.valueOf(env.getProperty("leagues.loading.threads", "1"));
+    this.personWorker = personWorker;
+    this.numThreads = Integer.valueOf(env.getProperty("persons.loading.threads", "1"));
     this.poolTaskExecutor = leagueProcessorThreadPool;
   }
 
@@ -63,17 +52,18 @@ public class NFPersonLoader {
 
     List<Person> personList = repo.getPersons();
     logger.info("About to load {} Persons using {} threads", personList.size(), numThreads);
-    recordsWritten.set(0);
+    personWorker.getRecordsWritten().set(0);
 
     int subListSize = (int) Math.floor(personList.size() / numThreads);
     long start = System.currentTimeMillis();
     Lists.partition(personList, subListSize).stream().parallel()
         .forEach(subList -> {
-          doSubmitableWork(aeLogger, subList, MERGE_PERSON_NODES);
+          personWorker.doSubmitableWork(aeLogger, subList, MERGE_PERSON_NODES);
 
         });
     monitorThreadPool();
-    logger.info("Processing of {} Persons using {} threads complete: {}ms", recordsWritten.get(),
+    logger.info("Processing of {} Persons using {} threads complete: {}ms",
+        personWorker.getRecordsWritten().get(),
         numThreads,
         System.currentTimeMillis() - start);
   }
@@ -81,20 +71,20 @@ public class NFPersonLoader {
   public void loadPersonRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Person> persons = repo.getPersons();
-    logger.info("About to load Person relationships using {} threads",numThreads);
-    recordsWritten.set(0);
+    logger.info("About to load Person relationships using {} threads", numThreads);
+    personWorker.getRecordsWritten().set(0);
 
     int subListSize = (int) Math.floor(persons.size() / numThreads);
     long start = System.currentTimeMillis();
 
     Lists.partition(persons, subListSize).stream().parallel()
         .forEach(subList -> {
-          doSubmitableWork(aeLogger, subList, MERGE_PERSON_RELATIONSHIPS);
+          personWorker.doSubmitableWork(aeLogger, subList, MERGE_PERSON_RELATIONSHIPS);
         });
     monitorThreadPool();
     logger
         .info("Processing of {} Person relationships using {} threads complete: {}ms",
-            recordsWritten.get(), numThreads,
+            personWorker.getRecordsWritten().get(), numThreads,
             System.currentTimeMillis() - start);
   }
 
@@ -111,30 +101,4 @@ public class NFPersonLoader {
     }
   }
 
-  @Async("personProcessorThreadPool")
-  private void doSubmitableWork(AggregateExceptionLogger aeLogger,
-                                List<Person> persons,
-                                String cypher) {
-    Neo4jTemplate
-        neo4jTemplate = getNeo4jTemplate();
-
-    logger.info("About to process {} persons ", persons.size());
-    Map<String, Object> map = new HashMap<String, Object>();
-    map.put("json", persons);
-    try {
-      new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS).step(500, TimeUnit.MILLISECONDS).execute(() -> {
-        neo4jTemplate.execute(cypher, map);
-        recordsWritten.addAndGet(persons.size());
-      });
-    } catch (Exception e) {
-      aeLogger
-          .error("Unable to update graph, personCount={}", persons.size(),
-              e);
-    }
-  }
-
-  private Neo4jTemplate getNeo4jTemplate() {
-    Session session = sessionFactory.openSession();
-    return new Neo4jTemplate(session);
-  }
 }
