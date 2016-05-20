@@ -20,15 +20,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class LeagueWorker {
 
-
-
   private static Logger logger = LoggerFactory.getLogger(LeagueWorker.class);
   private SessionFactory sessionFactory;
   private final AtomicLong recordsWritten = new AtomicLong(0);
 
   @Autowired
   public LeagueWorker(SessionFactory sessionFactory) {
-
     this.sessionFactory = sessionFactory;
   }
 
@@ -57,5 +54,9 @@ public class LeagueWorker {
           .error("Unable to update graph, leagueCount={}", leagues.size(),
               e);
     }
+  }
+
+  public AtomicLong getRecordsWritten() {
+    return recordsWritten;
   }
 }

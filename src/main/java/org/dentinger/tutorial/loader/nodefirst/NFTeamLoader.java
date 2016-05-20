@@ -67,12 +67,14 @@ public class NFTeamLoader {
 
     int subListSize = (int) Math.floor(teamList.size() / numThreads);
     long start = System.currentTimeMillis();
+
     Lists.partition(teamList, subListSize).stream().parallel()
         .forEach((teams) -> {
           submitableWorker.doSubmitableWork(aeLogger, teams, MERGE_TEAM_NODES);
-
         });
+
     monitorThreadPool();
+
     logger.info("Processing of {} Teams using {} threads complete: {}ms", submitableWorker.getRecordsWritten().get(),
         numThreads,
         System.currentTimeMillis() - start);
@@ -89,9 +91,7 @@ public class NFTeamLoader {
 
     Lists.partition(teamList, subListSize).stream().parallel()
         .forEach((teamsSubList) -> {
-
           submitableWorker.doSubmitableWork(aeLogger, teamsSubList, MERGE_TEAM_RELATIONSHIPS);
-
         });
     monitorThreadPool();
     logger
@@ -102,10 +102,10 @@ public class NFTeamLoader {
 
   private void monitorThreadPool() {
     while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}, KeepAlive time: {}",
+      logger.info("{} threads: {}, jobs still in pool {}",
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getThreadNamePrefix(),
           ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getKeepAliveSeconds());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
@@ -113,7 +113,4 @@ public class NFTeamLoader {
       }
     }
   }
-
-
-
 }

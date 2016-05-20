@@ -22,13 +22,10 @@ public class TeamWorker {
 
   private static Logger logger = LoggerFactory.getLogger(NFTeamLoader.class);
   private SessionFactory sessionFactory;
-
-
   private final AtomicLong recordsWritten = new AtomicLong(0);
 
   @Autowired
   public TeamWorker(SessionFactory sessionFactory) {
-
     this.sessionFactory = sessionFactory;
   }
 
@@ -45,7 +42,7 @@ public class TeamWorker {
         neo4jTemplate = getNeo4jTemplate();
 
     logger.debug("About to process {} teams ", teams.size());
-    Map<String, Object> map = new HashMap<String, Object>();
+    Map<String, Object> map = new HashMap<>();
     map.put("json", teams);
     try {
       new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS)
@@ -59,6 +56,7 @@ public class TeamWorker {
               e);
     }
   }
+
   public AtomicLong getRecordsWritten() {
     return recordsWritten;
   }
