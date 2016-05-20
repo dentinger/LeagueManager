@@ -68,7 +68,13 @@ relationship statement.
 ## Handling large data and deadlocks
 As part of the process of loading large (or even small to medium) amounts of data into Neo4j the dreaded deadlock can be encountered.
 
-*TODO* add documentation on deadlock approach.
+To work around this, we've introduced a new class called RetriableTask.
+>- Syntax: new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS)
+                    .step(500, TimeUnit.MILLISECONDS).execute()
+>>- retries = the number of times to retry on exception
+>>- delay = the amount of time to wait between retries
+>>- skip = the upper limit of random time to add to delay to randomize the amount of time we wait between retries.
+>>- execute = accepts implementation of the Supplier or Runnable interface.
 
 ## How to use
 
