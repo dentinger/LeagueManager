@@ -70,7 +70,6 @@ public class NFPersonLoader {
     Lists.partition(personList, subListSize).stream().parallel()
         .forEach(subList -> {
           personWorker.doSubmitableWork(aeLogger, subList, MERGE_PERSON_NODES);
-
         });
     monitorThreadPool();
     logger.info("Processing of {} Persons using {} threads complete: {}ms",
@@ -101,10 +100,10 @@ public class NFPersonLoader {
 
   private void monitorThreadPool() {
     while (((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}, KeepAlive time: {}",
+      logger.info("{} threads: {}, jobs still in pool {}",
+          ((ThreadPoolTaskExecutor) poolTaskExecutor).getThreadNamePrefix(),
           ((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount(),
-          ((ThreadPoolTaskExecutor) poolTaskExecutor).getPoolSize(),
-          ((ThreadPoolTaskExecutor) poolTaskExecutor).getKeepAliveSeconds());
+          ((ThreadPoolTaskExecutor) poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {

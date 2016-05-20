@@ -2,7 +2,6 @@ package org.dentinger.tutorial.loader.nodefirst;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.domain.League;
 import org.dentinger.tutorial.util.AggregateExceptionLogger;
@@ -23,7 +22,6 @@ public class NFLeagueLoader {
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
-  private final AtomicLong recordsWritten = new AtomicLong(0);
   private TaskExecutor poolTaskExecutor;
   private LeagueWorker leagueWorker;
 
@@ -67,17 +65,18 @@ public class NFLeagueLoader {
 
     List<League> leagueList = repo.getLeagues();
     logger.info("About to load {} Leagues using {} threads", leagueList.size(), numThreads);
-    recordsWritten.set(0);
+    leagueWorker.getRecordsWritten().set(0);
 
     int subListSize = (int) Math.floor(leagueList.size() / numThreads);
     long start = System.currentTimeMillis();
     Lists.partition(leagueList, subListSize).stream().parallel()
         .forEach((leagues) -> {
           leagueWorker.doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_NODES);
-
         });
+
     monitorThreadPool();
-    logger.info("Processing of {} Leagues using {} threads complete: {}ms", recordsWritten.get(),
+
+    logger.info("Processing of {} Leagues using {} threads complete: {}ms", leagueWorker.getRecordsWritten().get(),
         numThreads,
         System.currentTimeMillis() - start);
   }
@@ -86,34 +85,33 @@ public class NFLeagueLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     //List<Region> regions = repo.getRegions();
     List<League> leagues = repo.getLeagues();
-    logger.info("About to load League relationships using {} threads",numThreads);
-    recordsWritten.set(0);
+    logger.info("About to load League relationships using {} threads", numThreads);
+    leagueWorker.getRecordsWritten().set(0);
 
     int subListSize = (int) Math.floor(leagues.size() / numThreads);
     long start = System.currentTimeMillis();
 
     Lists.partition(leagues, subListSize).stream().parallel()
         .forEach((leagueSubList) -> {
-
-
           leagueWorker.doSubmitableWork(aeLogger, leagues, MERGE_LEAGUE_RELATIONSHIPS);
-
         });
+
     monitorThreadPool();
+
     logger
         .info("Processing of {} League relationships using {} threads complete: {}ms",
-            recordsWritten.get(), numThreads,
+            leagueWorker.getRecordsWritten().get(), numThreads,
             System.currentTimeMillis() - start);
   }
 
   private void monitorThreadPool() {
     while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount() > 0) {
-      logger.info("Currently running threads: {}, jobs still in pool {}, KeepAlive time: {}",
+      logger.info("{} threads: {}, jobs still in pool {}",
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getThreadNamePrefix(),
           ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getKeepAliveSeconds());
+          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
       try {
-        Thread.sleep(1000);
+        Thread.sleep(5000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
