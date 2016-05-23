@@ -84,9 +84,7 @@ public class SportsBallRepository {
     int regionCount = Integer.valueOf(environment.getRequiredProperty("regions.count"));
     regionList = new ArrayList<>();
     LongStream.range(1, regionCount + 1)
-        .forEach(id -> {
-          regionList.add(new Region(id, "Region-" + id));
-        });
+        .forEach(id -> regionList.add(new Region(id, "Region-" + id)));
   }
 
   private void generateLeagues() {
@@ -105,7 +103,7 @@ public class SportsBallRepository {
                 Long regionId = regionList.get(x.intValue()).getId();
                 List<League> leagues = leagueMap.get(regionId);
                 if (leagues == null) {
-                  leagues = new ArrayList<League>();
+                  leagues = new ArrayList<>();
                   leagueMap.put(regionId, leagues);
                 }
                 leagues.add(league);
@@ -157,7 +155,7 @@ public class SportsBallRepository {
           Person person = new Person(personIdGenerator.incrementAndGet(), UUID.randomUUID(), generatePlayerName(rand));
           List<Person> persons = personMap.get(team.getId());
           if (persons == null) {
-            persons = new ArrayList<Person>();
+            persons = new ArrayList<>();
             personMap.put(team.getId(), persons);
           }
           persons.add(person);
