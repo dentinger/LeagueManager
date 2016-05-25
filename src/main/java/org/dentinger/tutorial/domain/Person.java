@@ -23,6 +23,12 @@ public class Person {
   @Relationship(type = "PLAYSON")
   Set<Team> playson;
 
+  @Relationship(type = "FANOF")
+  Set<Team> fanOf;
+
+  @Relationship(type = "COACHOF")
+  Set<Team> coachOf;
+
   public Person(Long id, UUID uuid, String name){
     this.id = id;
     this.uuid = uuid;

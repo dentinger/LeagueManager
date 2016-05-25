@@ -62,6 +62,8 @@ public class NFPersonLoader {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
 
     List<Person> personList = repo.getPersons();
+    List<Person> fanList = repo.getFans();
+    personList.addAll(fanList);
     logger.info("About to load {} Persons using {} threads", personList.size(), numThreads);
     personWorker.getRecordsWritten().set(0);
 

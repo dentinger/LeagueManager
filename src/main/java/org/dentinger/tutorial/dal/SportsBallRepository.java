@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Repository;
 
+import static java.util.UUID.*;
+
 @Repository
 public class SportsBallRepository {
   private static final Logger logger = LoggerFactory.getLogger(SportsBallRepository.class);
@@ -29,7 +31,9 @@ public class SportsBallRepository {
   private Map<Long, List<League>> leagueMap; // key is region id
   private Map<Long, List<Team>> teamMap; // key is league id
   private Map<Long, List<Person>> personMap; // key is team id
+  private Map<Long, List<Person>> fanMap;
   private static final AtomicLong personIdGenerator = new AtomicLong(0);
+  private static final AtomicLong fanIdGenerator = new AtomicLong(0);
 
   @Autowired
   public SportsBallRepository(Environment environment) {
@@ -69,6 +73,11 @@ public class SportsBallRepository {
   public Optional<List<Person>> getPersons(Team team) {
 
     return Optional.ofNullable(personMap.get(team.getId()));
+  }
+
+  public List<Person> getFans() {
+    return fanMap.values().stream().flatMap(l -> l.stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   private void init() {
@@ -123,8 +132,11 @@ public class SportsBallRepository {
         .valueOf(environment.getRequiredProperty("teams.minPlayersPerTeam"));
     int maxPlayersPerTeam = Integer
         .valueOf(environment.getRequiredProperty("teams.maxPlayersPerTeam"));
+    int minFansPerTeam = Integer.valueOf(environment.getProperty("teams.minFansPerTeam", "10"));
+    int maxFansPerTeam = Integer.valueOf(environment.getProperty("teams.maxFansPerTeam", "50"));
     teamMap = new HashMap<>();
     personMap = new HashMap<>();
+    fanMap = new HashMap<>();
     List<League> leagueList = getLeagues();
     Random rand = new Random();
     LongStream.range(1, teamCount + 1)
@@ -135,15 +147,35 @@ public class SportsBallRepository {
                 Long leagueId = leagueList.get(x.intValue()).getId();
                 List<Team> teams = teamMap.get(leagueId);
                 if (teams == null) {
-                  teams = new ArrayList<Team>();
+                  teams = new ArrayList<>();
                   teamMap.put(leagueId, teams);
                 }
                 teams.add(team);
                 team.addLeague(leagueList.get(x.intValue()));
               });
           generatePlayers(team, minPlayersPerTeam, maxPlayersPerTeam);
+          generateFans(team, minFansPerTeam, maxFansPerTeam);
         });
   }
+
+  private void generateFans(Team team, int minFansPerTeam, int maxFansPerTeam) {
+    Random rand = new Random();
+    int fanCount = (minFansPerTeam == maxFansPerTeam) ? maxFansPerTeam :
+        rand.ints(minFansPerTeam, maxFansPerTeam).limit(1).findFirst()
+            .getAsInt();
+    LongStream.range(1, fanCount + 1)
+        .forEach(id -> {
+          Person person = new Person(fanIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
+          List<Person> persons = fanMap.get(team.getId());
+          if (persons == null) {
+            persons = new ArrayList<>();
+            fanMap.put(team.getId(), persons);
+          }
+          persons.add(person);
+          person.addTeam(team);
+        });
+  }
+
 
   private void generatePlayers(Team team, int minPlayers, int maxPlayers) {
     Random rand = new Random();
@@ -152,7 +184,7 @@ public class SportsBallRepository {
             .getAsInt();
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
-          Person person = new Person(personIdGenerator.incrementAndGet(), UUID.randomUUID(), generatePlayerName(rand));
+          Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
           List<Person> persons = personMap.get(team.getId());
           if (persons == null) {
             persons = new ArrayList<>();
@@ -242,7 +274,7 @@ public class SportsBallRepository {
         nouns[rand.ints(1, 0, nouns.length).findFirst().getAsInt()];
   }
 
-  private String generatePlayerName(Random rand) {
+  private String generatePersonName(Random rand) {
     return firstNames[rand.ints(1, 0, firstNames.length).findFirst().getAsInt()] + " " +
         lastNames[rand.ints(1, 0, lastNames.length).findFirst().getAsInt()];
   }
