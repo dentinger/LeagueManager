@@ -17,6 +17,8 @@ import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 @Component
 public class LeagueWorker {
 
@@ -45,7 +47,7 @@ public class LeagueWorker {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("json", leagues);
     try {
-      new RetriableTask().retries(3).delay(50, TimeUnit.MILLISECONDS).execute(() -> {
+      new RetriableTask().retries(3).delay(50, MILLISECONDS).execute(() -> {
         neo4jTemplate.execute(cypher, map);
         recordsWritten.addAndGet(leagues.size());
       });

@@ -9,6 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RetriableTask {
+  /**
+   * The default 'multiplier' value - value 2 (100% increase per backoff).
+   */
+  public static final int DEFAULT_MULTIPLIER = 2;
+  public static final long DEFAULT_INITIAL_INTERVAL = 10L;
+
   private Logger logger = LoggerFactory.getLogger(RetriableTask.class);
   private int retries;
   private long delay;
@@ -38,17 +44,7 @@ public class RetriableTask {
         runner.run();
         break;
       } catch (Exception e) {
-        if (i < retries - 1) {
-          try {
-            sleep(i);
-          } catch (Exception e2) {
-            logger.error("totalFails={}",totalFails.incrementAndGet());
-            throw e2;
-          }
-        } else {
-          logger.error("totalFails={}",totalFails.incrementAndGet());
-          throw e;
-        }
+        sleepOrThrow(i, e);
       }
     }
     return null;
@@ -59,24 +55,43 @@ public class RetriableTask {
       try {
         return supplier.get();
       } catch (Exception e) {
-        if (i < retries - 1) {
-          try {
-            sleep(i);
-          } catch (Exception e2) {
-            logger.error("totalFails={}",totalFails.incrementAndGet());
-            throw e2;
-          }
-        } else {
-          logger.error("totalFails={}",totalFails.incrementAndGet());
-          throw e;
-        }
+        sleepOrThrow(i, e);
       }
     }
     return null;
   }
 
+  private void sleepOrThrow(final int i, final Exception e) throws Exception {
+    if (i < retries - 1) {
+      try {
+        sleep(i);
+      } catch (InterruptedException e2) {
+        logger.error("Thread interrupted while sleeping", e2);
+        logger.error("totalFails={}",totalFails.incrementAndGet());
+        throw e2;
+      } catch (Exception e3) {
+        logger.error("Error while sleeping", e3);
+        throw e3;
+      }
+    } else {
+      logger.error("totalFails={}",totalFails.incrementAndGet());
+      throw e;
+    }
+  }
+
   private void sleep(int numRetry) throws Exception {
     long sleep = delay + ((step != 0)? ThreadLocalRandom.current().nextLong(step)*numRetry:0);
+    logger.warn("Delaying {}ms before retrying, totalRetries={}",sleep, totalRetries.incrementAndGet());
+    Thread.sleep(sleep);
+  }
+
+  /**
+   * This method allows you to sleep exponentially based on numRetry
+   * @param numRetry
+   * @throws Exception
+   */
+  private void sleepWithExponentialBackOff(int numRetry) throws InterruptedException {
+    long sleep = DEFAULT_INITIAL_INTERVAL + DEFAULT_MULTIPLIER^numRetry;
     logger.warn("Delaying {}ms before retrying, totalRetries={}",sleep, totalRetries.incrementAndGet());
     Thread.sleep(sleep);
   }
