@@ -1,3 +1,11 @@
+neo4j:
+  driver: org.neo4j.ogm.drivers.http.driver.HttpDriver
+  url: http://localhost:7474/
+  username: neo4j
+  password: blah
+  packages:
+    - org.dentinger.tutorial.domain
+
 logging:
   level:
     org.neo4j.ogm: WARN

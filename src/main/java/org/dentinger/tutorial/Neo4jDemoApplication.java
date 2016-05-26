@@ -22,32 +22,33 @@ public class Neo4jDemoApplication {
   private final static Logger logger = LoggerFactory.getLogger(Neo4jDemoApplication.class);
 
   public static void main(String[] args) {
-    SpringApplication.run(Neo4jDemoApplication.class, args).close();
+    SpringApplication.run(Neo4jDemoApplication.class, args);
   }
 
   @Bean CommandLineRunner runLoader(Neo4jLoaderService service,
                                     NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService,
                                     NodeIndexes nodeIndexes) {
-    return args -> {
-      logger.debug("Running LeagueManager loading process");
-      List<String> list = Arrays.asList(args);
-      if (!list.contains("nodeFirst")) {
-        if (list.contains("cleanup")) {
-          nodeFirstNeo4jLoaderService.cleanup();
-        }
-        nodeIndexes.createIndexes();
-        service.runCombinedUnwindLoader(list);
-      }
-      if (list.contains("nodeFirst")) {
-        if (list.contains("cleanup")) {
-          nodeFirstNeo4jLoaderService.cleanup();
-        }
-        nodeIndexes.createIndexes();
-        nodeFirstNeo4jLoaderService.runLoader(list);
-      }
-      logger
-          .debug("Compeleted LeagueManager loading process -------  Enjoy your SPORTSBALL Season ");
-    };
+//    return args -> {
+//      logger.debug("Running LeagueManager loading process");
+//      List<String> list = Arrays.asList(args);
+//      if (!list.contains("nodeFirst")) {
+//        if (list.contains("cleanup")) {
+//          nodeFirstNeo4jLoaderService.cleanup();
+//        }
+//        nodeIndexes.createIndexes();
+//        service.runCombinedUnwindLoader(list);
+//      }
+//      if (list.contains("nodeFirst")) {
+//        if (list.contains("cleanup")) {
+//          nodeFirstNeo4jLoaderService.cleanup();
+//        }
+//        nodeIndexes.createIndexes();
+//        nodeFirstNeo4jLoaderService.runLoader(list);
+//      }
+//      logger
+//          .debug("Compeleted LeagueManager loading process -------  Enjoy your SPORTSBALL Season ");
+//    };
+    return args -> { logger.info("Command line runner......"); };
   }
 
 }
