@@ -18,7 +18,7 @@ public class NodeIndexes {
     this.neo4jTemplate = neo4jTemplate;
   }
 
-  public void createIndexes() {
+  @SuppressWarnings("deprecation") public void createIndexes() {
     neo4jTemplate.execute("CREATE INDEX on :Region(id)");
     neo4jTemplate.execute("CREATE INDEX on :League(id)");
     neo4jTemplate.execute("CREATE INDEX on :Team(id)");
