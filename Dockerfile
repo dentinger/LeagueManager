@@ -1,4 +1,4 @@
-FROM docker.kroger.com/library/alpine-java
+FROM java:alpine
 
 WORKDIR /opt
 COPY build/libs/neo4j-demo*jar /opt/neo4j-demo.jar
