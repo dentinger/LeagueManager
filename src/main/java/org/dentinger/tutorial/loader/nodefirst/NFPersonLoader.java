@@ -37,6 +37,14 @@ public class NFPersonLoader {
           + "match (p:Person {id: person.id}) "
           + "merge(t)-[:PLAYSON]-(p) ";
 
+  private String MERGE_FAN_RELATIONSHIPS =
+      " UNWIND {json} AS person "
+          + "unwind person.fanOf as team "
+          + "match (t:Team {id: team.id}) "
+          + "match (p:Person {id: person.id}) "
+          + "merge(t)-[:FANOF]-(p) ";
+
+
   private String CLEAN_UP =
       "match (p:Person) detach delete p";
 
@@ -99,6 +107,27 @@ public class NFPersonLoader {
             personWorker.getRecordsWritten().get(), numThreads,
             System.currentTimeMillis() - start);
   }
+
+  public void loadFansRelationships() {
+    AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
+    List<Person> fans = repo.getFans();
+    logger.info("About to load Fan relationships using {} threads", numThreads);
+    personWorker.getRecordsWritten().set(0);
+
+    int subListSize = (int) Math.floor(fans.size() / numThreads);
+    long start = System.currentTimeMillis();
+
+    Lists.partition(fans, subListSize).stream().parallel()
+        .forEach(subList -> {
+          personWorker.doSubmitableWork(aeLogger, subList, MERGE_FAN_RELATIONSHIPS);
+        });
+    monitorThreadPool();
+    logger
+        .info("Processing of {} Fan relationships using {} threads complete: {}ms",
+            personWorker.getRecordsWritten().get(), numThreads,
+            System.currentTimeMillis() - start);
+  }
+
 
   private void monitorThreadPool() {
     while (((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount() > 0) {

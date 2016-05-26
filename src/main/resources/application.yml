@@ -7,8 +7,8 @@ regions:
   loading.threads: 1
 
 leagues:
-  loading.threads: 100
-  count: 2360
+  loading.threads: 10
+  count: 20
   minRegionAffiliations: 1
   maxRegionAffiliations: 3
   threads:
@@ -19,12 +19,14 @@ leagues:
       capacity: 20000
 
 teams:
-  loading.threads: 20000
-  count: 100000
+  loading.threads: 100
+  count: 100
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8
   maxPlayersPerTeam: 23
+  minFansPerTeam: 2
+  maxFansPerTeam: 4
   threads:
     size:
       core: 0
@@ -33,10 +35,11 @@ teams:
       capacity: 20000
 
 persons:
-  loading.threads: 20000
+  loading.threads: 20
   threads:
     size:
       core: 0
       maxpool: 20
     queue:
       capacity: 20000
+

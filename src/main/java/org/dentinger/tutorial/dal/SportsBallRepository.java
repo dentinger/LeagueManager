@@ -132,8 +132,8 @@ public class SportsBallRepository {
         .valueOf(environment.getRequiredProperty("teams.minPlayersPerTeam"));
     int maxPlayersPerTeam = Integer
         .valueOf(environment.getRequiredProperty("teams.maxPlayersPerTeam"));
-    int minFansPerTeam = Integer.valueOf(environment.getProperty("teams.minFansPerTeam", "10"));
-    int maxFansPerTeam = Integer.valueOf(environment.getProperty("teams.maxFansPerTeam", "50"));
+    int minFansPerTeam = Integer.valueOf(environment.getProperty("teams.minFansPerTeam", "2"));
+    int maxFansPerTeam = Integer.valueOf(environment.getProperty("teams.maxFansPerTeam", "4"));
     teamMap = new HashMap<>();
     personMap = new HashMap<>();
     fanMap = new HashMap<>();
@@ -172,7 +172,7 @@ public class SportsBallRepository {
             fanMap.put(team.getId(), persons);
           }
           persons.add(person);
-          person.addTeam(team);
+          person.fanOf(team);
         });
   }
 
