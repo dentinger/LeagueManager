@@ -80,9 +80,10 @@ Syntax: new RetriableTask().retries(3).delay(200, TimeUnit.MILLISECONDS)
 
 ## How to use
 
-There are a handful of properties that drive the loading of data in LeagueManager.  All of these can be set/updated in the application.yml file.
-For a full set of properties currently set look in ![application.yml](./src/main/resources/application.yml). There are a few properties that have a more impact
-on the behavior of the app.  These include:
+There are a handful of properties that drive the loading of data in LeagueManager.  All of these
+can be set/updated in the application.yml file.
+For a full set of properties currently set look in ![application.yml](./src/main/resources/application.yml).
+There are a few properties that have a more impact on the behavior of the app.  These include:
 
 * regions.loading.threads - how many threads will load regions into database.
 * leagues.loading.threads - how many threads will load leagues into database.
@@ -91,7 +92,9 @@ on the behavior of the app.  These include:
 * neo4j.username - neo4j user
 * neo4j.password - password for neo4j.user
 
-To run the test project either run the Spring Boot application from the command line or from your IDE of choice.
+There are three ways that the project can be run: Command Line, From and IDE, and From a Docker image.
+
+### General application parameters
 
 |Functionality |JVM parameter |Description|
 |---|---|---|
@@ -101,7 +104,14 @@ To run the test project either run the Spring Boot application from the command 
 | Load Region data  | loadRegions  | Only load region data to the application. |
 | Load Team data | loadTeams | Only load team data to the application. |
 | Load Person data | loadPersons | Only load team data to the application |
-| Run Node First insertion | nodeFirst | Run using the node first approach for loaders. |
+| Run Node First insertion | nodeFirst | Run using the node first approach for loaders.  The node first algorithm can be used with all loadAll or any of the individual load types.|
+
+### Command line and IDE Running:
+
+To run the project from the command line, first do a gradle clean and build.  Then you can use any
+of the general application parameters passed in on the command line.
+
+If running from the an IDE, the program arguments would use any of the general program arguments.
 
 Sample usage: *java -jar leagueManager-0.0.1-RELEASE.jar loadLeagues loadRegions*
 
@@ -110,6 +120,36 @@ Sample usage of Node First approach: *java -jar leagueManager-0.0.1-RELEASE.jar 
 Sample Cleanup usage: *java -jar leagueManager-0.0.1-RELEASE.jar cleanup*
 
 This will load the leagues and regions into the application.
+
+### Docker execution
+
+To run with docker you will have to update your local install of Neo4j.  The configuration of Neo4j
+will need to be changed to allow non localhost connections for HTTP.  To do this, cd to into the config
+directory for your Neo4j install.  Edit the neo4j.properties so that following line is uncommented:
+```
+# To have HTTP accept non-local connections, uncomment this line
+dbms.connector.http.address=0.0.0.0:7474
+```
+This will allow non local connections which is needed for docker to access Neo4j. As a benefit,
+the configuration changed to make docker work also allows the project to connect to any Neo4j instance.
+All that is needed is to over ride the spring boot properties for Neo4j.  For docker this means that
+ the neo4j.url will be specified as an environment variable in the docker container at run time.
+
+ Steps to run in docker:
+
+* ./gradlew clean build
+*  docker build -t *put a tag name here* .  #note that that the . is needed
+* docker run  --rm -e "neo4j.url=http://*your ip*:7474/" -t -i -p 8080:8080 *put a tag name here*
+
+This will run the application in docker.  By default no parameters are passed to the application so nothing loads.
+Right now the web interface only supports NodeFirst processing.
+You can load data by going to your browser and hitting the following url:
+
+* Run a cleanup -- http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst
+* Load regions -- http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst&loadRegions=loadRegions
+
+The current pattern (and not the best) is to pass a request parameter equal to itself for any of
+the general application parameters.
 
 [Outstanding Concerns](./docs/outstanding_concerns.md)
 
