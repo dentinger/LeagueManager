@@ -23,11 +23,15 @@ public class Person {
   @Relationship(type = "PLAYSON")
   Set<Team> playson;
 
+  @Relationship(type = "FANOF")
+  Set<Team> fanOf;
+
   public Person(Long id, UUID uuid, String name){
     this.id = id;
     this.uuid = uuid;
     this.name = name;
     this.playson = new HashSet<>();
+    this.fanOf = new HashSet<>();
   }
 
   public Long getId() {
@@ -72,6 +76,16 @@ public class Person {
 
   public void addTeam(Team team){
     playson.add(team);
+  }
+
+  public void fanOf(Team team){ fanOf.add(team); }
+
+  public Set<Team> getFanOf() {
+    return fanOf;
+  }
+
+  public void setFanOf(Set<Team> fanOf) {
+    this.fanOf = fanOf;
   }
 
   @Override public String toString() {
