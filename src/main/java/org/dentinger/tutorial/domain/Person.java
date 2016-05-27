@@ -4,9 +4,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.dentinger.tutorial.util.UUIDConverter;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
+import org.neo4j.ogm.annotation.typeconversion.Convert;
 
 @NodeEntity
 public class Person {
@@ -14,14 +16,21 @@ public class Person {
   @GraphId
   private Long id;
 
+  @Convert(UUIDConverter.class)
   private UUID uuid;
 
   private String name;
 
   private Date dateOfBirth;
 
-  @Relationship(type = "PLAYSON")
-  Set<Team> playson;
+  @Relationship(type = "PLAYSON", direction = "OUTGOING")
+  private Set<Team> playson;
+
+  ///
+
+  public Person() {
+    this.playson = new HashSet<>();
+  }
 
   @Relationship(type = "FANOF")
   Set<Team> fanOf;
