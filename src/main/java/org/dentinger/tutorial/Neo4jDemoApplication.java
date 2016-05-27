@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 
 @SpringBootApplication
-@EnableNeo4jRepositories(basePackages = "org.dentinger.tutorial.repository")
 public class Neo4jDemoApplication {
 
   private final static Logger logger = LoggerFactory.getLogger(Neo4jDemoApplication.class);
