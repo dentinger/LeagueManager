@@ -27,14 +27,14 @@ public class NFTeamLoader {
 
   private String MERGE_TEAM_NODES =
       "unwind {json} as team "
-          + "merge (t:Team {id: team.id}) "
+          + "merge (t:Team {teamId: team.teamId}) "
           + "on create set t.name = team.name ";
 
   private String MERGE_TEAM_RELATIONSHIPS =
       " UNWIND {json} AS team "
           + "unwind team.leagues as league "
-          + "match (l:League {id: league.id}) "
-          + "match (t:Team {id: team.id}) "
+          + "match (l:League {leagueId: league.leagueId}) "
+          + "match (t:Team {teamId: team.teamId}) "
           + "merge(t)-[:MEMBERSHIP]-(l) ";
 
   private String CLEAN_UP =

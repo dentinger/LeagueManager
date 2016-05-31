@@ -11,24 +11,21 @@ public class League {
 
   @GraphId
   private Long id;
+  private Long leagueId;
   private String name;
-
-  @Relationship(type = "SANCTION")
+  @Relationship(type = "SANCTION", direction = Relationship.UNDIRECTED)
   private Set<Region> regions;
+  @Relationship(type = "MEMBERSHIP", direction = Relationship.UNDIRECTED)
+  private Set<Team> teams;
 
   public League() {
-    super();
-    regions = new HashSet<>();
+    this.regions = new HashSet<>();
+    this.teams = new HashSet<>();
   }
 
-  public League(Long id) {
+  public League(Long leagueId, String name) {
     this();
-    this.id = id;
-  }
-
-  public League(Long id, String name) {
-    this();
-    this.id = id;
+    this.leagueId = leagueId;
     this.name = name;
   }
 
@@ -38,6 +35,14 @@ public class League {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public Long getLeagueId() {
+    return leagueId;
+  }
+
+  public void setLeagueId(Long leagueId) {
+    this.leagueId = leagueId;
   }
 
   public String getName() {
@@ -56,13 +61,23 @@ public class League {
     this.regions = regions;
   }
 
+  public Set<Team> getTeams() {
+    return teams;
+  }
+
+  public void setTeams(Set<Team> teams) {
+    this.teams = teams;
+  }
+
   public void addRegion(Region region) {
     regions.add(region);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "League{" +
         "id=" + id +
+        ", leagueId=" + leagueId +
         ", name='" + name + '\'' +
         ", region count=" + regions.size() +
         '}';

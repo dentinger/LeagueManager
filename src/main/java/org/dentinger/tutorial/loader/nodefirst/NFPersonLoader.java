@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class NFPersonLoader {
 
   private static Logger logger = LoggerFactory.getLogger(NFPersonLoader.class);
+
   private SessionFactory sessionFactory;
   private SportsBallRepository repo;
   private int numThreads;
@@ -27,22 +28,22 @@ public class NFPersonLoader {
 
   private String MERGE_PERSON_NODES =
       "unwind {json} as person "
-          + "merge (p:Person {id: person.id}) "
-          + " on create set p.uuid = person.uuid, p.name = person.name ";
+          + "merge (p:Person {personId: person.personId}) "
+          + " on create set p.uuid = person.uuid, p.name = person.name, p.dateOfBirth = person.dateOfBirth ";
 
   private String MERGE_PERSON_RELATIONSHIPS =
       " UNWIND {json} AS person "
           + "unwind person.playson as team "
-          + "match (t:Team {id: team.id}) "
-          + "match (p:Person {id: person.id}) "
-          + "merge(t)-[:PLAYSON]-(p) ";
+          + "match (t:Team {teamId: team.teamId}) "
+          + "match (p:Person {personId: person.personId}) "
+          + "merge(t)-[:PLAYS_ON]-(p) ";
 
   private String MERGE_FAN_RELATIONSHIPS =
       " UNWIND {json} AS person "
           + "unwind person.fanOf as team "
-          + "match (t:Team {id: team.id}) "
-          + "match (p:Person {id: person.id}) "
-          + "merge(t)-[:FANOF]-(p) ";
+          + "match (t:Team {teamId: team.teamId}) "
+          + "match (p:Person {personId: person.personId}) "
+          + "merge(t)-[:FAN_OF]-(p) ";
 
 
   private String CLEAN_UP =

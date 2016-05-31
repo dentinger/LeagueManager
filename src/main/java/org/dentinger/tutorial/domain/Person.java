@@ -2,6 +2,7 @@ package org.dentinger.tutorial.domain;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import org.dentinger.tutorial.util.UUIDConverter;
@@ -9,38 +10,42 @@ import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.annotation.typeconversion.Convert;
+import org.neo4j.ogm.annotation.typeconversion.DateLong;
 
 @NodeEntity
 public class Person {
 
   @GraphId
   private Long id;
-
+  private Long personId;
   @Convert(UUIDConverter.class)
   private UUID uuid;
-
   private String name;
-
+  @DateLong
   private Date dateOfBirth;
-
-  @Relationship(type = "PLAYSON", direction = "OUTGOING")
+  @Relationship(type = "PLAYS_ON", direction = Relationship.UNDIRECTED)
   private Set<Team> playson;
+  @Relationship(type = "FAN_OF", direction = Relationship.UNDIRECTED)
+  private Set<Team> fanOf;
+
+  private static Random rnd = new Random();
 
   ///
 
   public Person() {
     this.playson = new HashSet<>();
+    this.fanOf = new HashSet<>();
   }
 
-  @Relationship(type = "FANOF")
-  Set<Team> fanOf;
-
-  public Person(Long id, UUID uuid, String name){
-    this.id = id;
+  public Person(Long personId, UUID uuid, String name) {
+    this();
+    this.personId = personId;
     this.uuid = uuid;
     this.name = name;
-    this.playson = new HashSet<>();
-    this.fanOf = new HashSet<>();
+    // Get an Epoch value roughly between 1940 and 2010
+    // -946771200000L = January 1, 1940
+    // Add up to 70 years to it (using modulus on the next long)
+    this.dateOfBirth = new Date(-946771200000L + (Math.abs(rnd.nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000)));
   }
 
   public Long getId() {
@@ -49,6 +54,14 @@ public class Person {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public Long getPersonId() {
+    return personId;
+  }
+
+  public void setPersonId(Long personId) {
+    this.personId = personId;
   }
 
   public UUID getUuid() {
@@ -83,12 +96,6 @@ public class Person {
     this.playson = playson;
   }
 
-  public void addTeam(Team team){
-    playson.add(team);
-  }
-
-  public void fanOf(Team team){ fanOf.add(team); }
-
   public Set<Team> getFanOf() {
     return fanOf;
   }
@@ -97,9 +104,16 @@ public class Person {
     this.fanOf = fanOf;
   }
 
+  public void addTeam(Team team){
+    playson.add(team);
+  }
+
+  public void fanOf(Team team){ fanOf.add(team); }
+
   @Override public String toString() {
     return "Person{" +
         "id=" + id +
+        ", personId=" + personId +
         ", uuid='" + uuid + '\'' +
         ", name='" + name + '\'' +
         ", dateOfBirth=" + dateOfBirth +
