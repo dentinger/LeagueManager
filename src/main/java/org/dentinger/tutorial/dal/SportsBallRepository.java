@@ -32,7 +32,7 @@ public class SportsBallRepository {
   private Map<Long, List<Person>> personMap; // key is team id
   private Map<Long, List<Person>> fanMap;
   private static final AtomicLong personIdGenerator = new AtomicLong(0);
-  private static final AtomicLong fanIdGenerator = new AtomicLong(0);
+  //private static final AtomicLong fanIdGenerator = new AtomicLong(0);
 
   @Autowired
   public SportsBallRepository(Environment environment) {
@@ -68,7 +68,6 @@ public class SportsBallRepository {
   }
 
   public Optional<List<Person>> getPersons(Team team) {
-
     return Optional.ofNullable(personMap.get(team.getTeamId()));
   }
 
@@ -163,7 +162,7 @@ public class SportsBallRepository {
             .getAsInt();
     LongStream.range(1, fanCount + 1)
         .forEach(id -> {
-          Person person = new Person(fanIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
+          Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
           List<Person> persons = fanMap.get(team.getTeamId());
           if (persons == null) {
             persons = new ArrayList<>();
@@ -173,7 +172,6 @@ public class SportsBallRepository {
           person.fanOf(team);
         });
   }
-
 
   private void generatePlayers(Team team, int minPlayers, int maxPlayers) {
     Random rand = new Random();
@@ -201,7 +199,7 @@ public class SportsBallRepository {
   }
 
   private String[] adjs = new String[]{
-      "Fast", "Big", "Mighty", "Super", "Shining", "Cold Hearted", "Free Range", "Thundering ",
+      "Fast", "Big", "Mighty", "Super", "Shining", "Cold Hearted", "Free Range", "Thundering",
       "Purple", "Great Green", "Lovely", "Yellow", "Stuffed", "Flat", "Dirty",
       "Tiny", "Alpha", "Omega", "Vegetarian", "Pirate"
   };
@@ -242,6 +240,7 @@ public class SportsBallRepository {
       "Dan", "Shawn", "Erik", "Tony", "Gerald", "Jane", "Michael", "Mike", "Joseph",
       "Wesley", "Haley", "Maynard"
   };
+
   private String[] lastNames = new String[]{
       "Barker", "Morales", "Garrison", "Ayala", "Sutton", "Delacruz", "Olsen", "Stephenson",
       "Adkins", "Tran", "Hicks", "Lara", "Barrett", "Warren", "Harper", "Reyes", "Liu", "Best",
@@ -276,5 +275,4 @@ public class SportsBallRepository {
     return firstNames[rand.ints(1, 0, firstNames.length).findFirst().getAsInt()] + " " +
         lastNames[rand.ints(1, 0, lastNames.length).findFirst().getAsInt()];
   }
-
 }
