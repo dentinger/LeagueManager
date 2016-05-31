@@ -1,12 +1,9 @@
 package org.dentinger.tutorial.config;
 
-import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -38,8 +35,6 @@ public class NeoConfiguration extends Neo4jConfiguration {
   @Override
   @Bean
   public SessionFactory getSessionFactory() {
-    return new SessionFactory(getConfiguration(), "com.example.neo.domain");
+    return new SessionFactory(getConfiguration(), "org.dentinger.tutorial.domain");
   }
-
-
 }
