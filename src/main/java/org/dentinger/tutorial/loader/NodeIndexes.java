@@ -19,10 +19,10 @@ public class NodeIndexes {
   }
 
   @SuppressWarnings("deprecation") public void createIndexes() {
-    neo4jTemplate.execute("CREATE INDEX on :Region(id)");
-    neo4jTemplate.execute("CREATE INDEX on :League(id)");
-    neo4jTemplate.execute("CREATE INDEX on :Team(id)");
-    neo4jTemplate.execute("CREATE INDEX on :Person(id)");
+    neo4jTemplate.execute("CREATE INDEX on :Region(regionId)");
+    neo4jTemplate.execute("CREATE INDEX on :League(leagueId)");
+    neo4jTemplate.execute("CREATE INDEX on :Team(teamId)");
+    neo4jTemplate.execute("CREATE INDEX on :Person(personId)");
     neo4jTemplate.execute("CREATE INDEX on :Person(uuid)");
     logger.info("Creation of indexes complete");
   }

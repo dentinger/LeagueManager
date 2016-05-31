@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -21,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Repository;
 
-import static java.util.UUID.*;
+import static java.util.UUID.randomUUID;
 
 @Repository
 public class SportsBallRepository {
@@ -51,8 +50,7 @@ public class SportsBallRepository {
   }
 
   public Optional<List<League>> getLeagues(Region region) {
-
-    return Optional.ofNullable(leagueMap.get(region.getId()));
+    return Optional.ofNullable(leagueMap.get(region.getRegionId()));
   }
 
   public List<Team> getTeams() {
@@ -61,8 +59,7 @@ public class SportsBallRepository {
   }
 
   public Optional<List<Team>> getTeams(League league) {
-
-    return Optional.ofNullable(teamMap.get(league.getId()));
+    return Optional.ofNullable(teamMap.get(league.getLeagueId()));
   }
 
   public List<Person> getPersons() {
@@ -72,7 +69,7 @@ public class SportsBallRepository {
 
   public Optional<List<Person>> getPersons(Team team) {
 
-    return Optional.ofNullable(personMap.get(team.getId()));
+    return Optional.ofNullable(personMap.get(team.getTeamId()));
   }
 
   public List<Person> getFans() {
@@ -108,8 +105,8 @@ public class SportsBallRepository {
           League league = new League(id, "League-" + id);
           getParentOffsets(regionList.size(), minRegionAffiliations, maxRegionAffiliations)
               .forEach(x -> {
-                // logger.info("Adding league({}) to region({})",league.getId(),x);
-                Long regionId = regionList.get(x.intValue()).getId();
+                // logger.info("Adding league({}) to region({})",league.getLeagueId(),x);
+                Long regionId = regionList.get(x.intValue()).getRegionId();
                 List<League> leagues = leagueMap.get(regionId);
                 if (leagues == null) {
                   leagues = new ArrayList<>();
@@ -119,6 +116,7 @@ public class SportsBallRepository {
                 league.addRegion(regionList.get(x.intValue()));
               });
         });
+
     // logger.info("leagueCount={}",leagueMap.values().stream().flatMap(l -> l.stream()).count());
   }
 
@@ -144,7 +142,7 @@ public class SportsBallRepository {
           Team team = new Team(id, generateName(rand, id));
           getParentOffsets(leagueList.size(), minLeagueMemberships, maxLeagueMemberships)
               .forEach(x -> {
-                Long leagueId = leagueList.get(x.intValue()).getId();
+                Long leagueId = leagueList.get(x.intValue()).getLeagueId();
                 List<Team> teams = teamMap.get(leagueId);
                 if (teams == null) {
                   teams = new ArrayList<>();
@@ -166,10 +164,10 @@ public class SportsBallRepository {
     LongStream.range(1, fanCount + 1)
         .forEach(id -> {
           Person person = new Person(fanIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
-          List<Person> persons = fanMap.get(team.getId());
+          List<Person> persons = fanMap.get(team.getTeamId());
           if (persons == null) {
             persons = new ArrayList<>();
-            fanMap.put(team.getId(), persons);
+            fanMap.put(team.getTeamId(), persons);
           }
           persons.add(person);
           person.fanOf(team);
@@ -185,10 +183,10 @@ public class SportsBallRepository {
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
           Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
-          List<Person> persons = personMap.get(team.getId());
+          List<Person> persons = personMap.get(team.getTeamId());
           if (persons == null) {
             persons = new ArrayList<>();
-            personMap.put(team.getId(), persons);
+            personMap.put(team.getTeamId(), persons);
           }
           persons.add(person);
           person.addTeam(team);

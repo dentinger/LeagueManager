@@ -29,7 +29,6 @@ public class PersonWorker {
 
   @Autowired
   public PersonWorker(SessionFactory sessionFactory) {
-
     this.sessionFactory = sessionFactory;
   }
 

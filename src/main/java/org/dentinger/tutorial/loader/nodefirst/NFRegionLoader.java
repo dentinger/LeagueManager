@@ -32,7 +32,7 @@ public class NFRegionLoader {
 
   private String MERGE_REGIONS =
       "unwind {json} as q " +
-          "merge (r:Region {id: q.id})" +
+          "merge (r:Region {regionId: q.regionId})" +
           "  on create set r.name = q.name " +
           "  on match set r.name = q.name";
 
