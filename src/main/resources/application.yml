@@ -11,12 +11,12 @@ logging:
     org.neo4j.ogm: WARN
 
 regions:
-  count: 20
+  count: 24
   loading.threads: 1
 
 leagues:
   loading.threads: 10
-  count: 20
+  count: 2466
   minRegionAffiliations: 1
   maxRegionAffiliations: 3
   threads:
@@ -28,7 +28,7 @@ leagues:
 
 teams:
   loading.threads: 100
-  count: 100
+  count: 100000
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8

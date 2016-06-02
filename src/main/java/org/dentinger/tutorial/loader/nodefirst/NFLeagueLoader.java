@@ -26,17 +26,17 @@ public class NFLeagueLoader {
   private LeagueWorker leagueWorker;
 
   private String MERGE_LEAGUE_NODES =
-      "unwind {json} as q "
-          + "merge (l:League {leagueId: q.leagueId})"
-          + " on create set l.name = q.name"
-          + " on match set l.name = q.name";
+      "unwind {json} as league "
+          + "merge (l:League {leagueId: league.leagueId})"
+          + " on create set l.name = league.name"
+          + " on match set l.name = league.name";
 
 
   private String MERGE_LEAGUE_RELATIONSHIPS =
-      "unwind {json} as q "
-          + "unwind q.regions as p "
-          + "   match (r:Region {regionId: p.regionId})"
-          + "   match (l:League {leagueId: q.leagueId})"
+      "unwind {json} as league "
+          + "unwind league.regions as region "
+          + "   match (r:Region {regionId: region.regionId})"
+          + "   match (l:League {leagueId: league.leagueId})"
           + "   merge (r)-[:SANCTION]-(l)";
 
   private String CLEAN_UP =
@@ -106,10 +106,10 @@ public class NFLeagueLoader {
 
   private void monitorThreadPool() {
     while (( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount() > 0) {
-      logger.info("{} threads: {}, jobs still in pool {}",
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getThreadNamePrefix(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
-          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
+//      logger.info("{} threads: {}, jobs still in pool {}",
+//          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getThreadNamePrefix(),
+//          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getActiveCount(),
+//          ( (ThreadPoolTaskExecutor)poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {

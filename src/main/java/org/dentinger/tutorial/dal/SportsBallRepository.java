@@ -37,7 +37,6 @@ public class SportsBallRepository {
   @Autowired
   public SportsBallRepository(Environment environment) {
     this.environment = environment;
-    init();
   }
 
   public List<Region> getRegions() {
@@ -76,12 +75,18 @@ public class SportsBallRepository {
         .collect(Collectors.toList());
   }
 
-  private void init() {
+  public void init(List<String> list) {
     long start = System.currentTimeMillis();
     logger.info("Initializing SportsBall Repo ...");
-    generateRegions();
-    generateLeagues();
-    generateTeams(); // Also generates persons
+    if( list.contains("loadRegions") || list.contains("loadAll")) {
+      generateRegions();
+    }
+    if(list.contains("loadLeagues") || list.contains("loadAll")) {
+      generateLeagues();
+    }
+    if( list.contains("loadTeams") || list.contains("loadAll")) {
+      generateTeams(list.contains("loadPlayers") || list.contains("loadAll")); // Also generates persons - optionally
+    }
     logger.info("Initialization complete: {}ms", System.currentTimeMillis() - start);
   }
 
@@ -90,6 +95,7 @@ public class SportsBallRepository {
     regionList = new ArrayList<>();
     LongStream.range(1, regionCount + 1)
         .forEach(id -> regionList.add(new Region(id, "Region-" + id)));
+    logger.info("Generation of {} regions is complete",regionCount);
   }
 
   private void generateLeagues() {
@@ -115,11 +121,10 @@ public class SportsBallRepository {
                 league.addRegion(regionList.get(x.intValue()));
               });
         });
-
-    // logger.info("leagueCount={}",leagueMap.values().stream().flatMap(l -> l.stream()).count());
+    logger.info("Generation of {} leagues is complete",leagueCount);
   }
 
-  private void generateTeams() {
+  private void generateTeams(boolean loadPlayers) {
     int teamCount = Integer.valueOf(environment.getRequiredProperty("teams.count"));
     int minLeagueMemberships = Integer
         .valueOf(environment.getRequiredProperty("teams.minLeagueMemberships"));
@@ -136,6 +141,7 @@ public class SportsBallRepository {
     fanMap = new HashMap<>();
     List<League> leagueList = getLeagues();
     Random rand = new Random();
+    AtomicLong playerCount = new AtomicLong(0L);
     LongStream.range(1, teamCount + 1)
         .forEach(id -> {
           Team team = new Team(id, generateName(rand, id));
@@ -150,12 +156,16 @@ public class SportsBallRepository {
                 teams.add(team);
                 team.addLeague(leagueList.get(x.intValue()));
               });
-          generatePlayers(team, minPlayersPerTeam, maxPlayersPerTeam);
-          generateFans(team, minFansPerTeam, maxFansPerTeam);
+          if( loadPlayers) {
+            playerCount.addAndGet(generatePlayers(team, minPlayersPerTeam, maxPlayersPerTeam));
+            playerCount.addAndGet(generateFans(team, minFansPerTeam, maxFansPerTeam));
+          }
         });
+    logger.info("Generation of {} teams is complete",teamCount);
+    logger.info("Generation of {} players is complete",playerCount.get());
   }
 
-  private void generateFans(Team team, int minFansPerTeam, int maxFansPerTeam) {
+  private int generateFans(Team team, int minFansPerTeam, int maxFansPerTeam) {
     Random rand = new Random();
     int fanCount = (minFansPerTeam == maxFansPerTeam) ? maxFansPerTeam :
         rand.ints(minFansPerTeam, maxFansPerTeam).limit(1).findFirst()
@@ -171,9 +181,10 @@ public class SportsBallRepository {
           persons.add(person);
           person.fanOf(team);
         });
+    return fanCount;
   }
 
-  private void generatePlayers(Team team, int minPlayers, int maxPlayers) {
+  private int generatePlayers(Team team, int minPlayers, int maxPlayers) {
     Random rand = new Random();
     int playerCount = (minPlayers == maxPlayers) ? maxPlayers :
         rand.ints(minPlayers, maxPlayers).limit(1).findFirst()
@@ -189,6 +200,7 @@ public class SportsBallRepository {
           persons.add(person);
           person.addTeam(team);
         });
+    return playerCount;
   }
 
   private Stream<Long> getParentOffsets(long range, int minReturned, int maxReturned) {

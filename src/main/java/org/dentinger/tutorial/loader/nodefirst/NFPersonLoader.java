@@ -132,10 +132,10 @@ public class NFPersonLoader {
 
   private void monitorThreadPool() {
     while (((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount() > 0) {
-      logger.info("{} threads: {}, jobs still in pool {}",
-          ((ThreadPoolTaskExecutor) poolTaskExecutor).getThreadNamePrefix(),
-          ((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount(),
-          ((ThreadPoolTaskExecutor) poolTaskExecutor).getPoolSize());
+//      logger.info("{} threads: {}, jobs still in pool {}",
+//          ((ThreadPoolTaskExecutor) poolTaskExecutor).getThreadNamePrefix(),
+//          ((ThreadPoolTaskExecutor) poolTaskExecutor).getActiveCount(),
+//          ((ThreadPoolTaskExecutor) poolTaskExecutor).getPoolSize());
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {

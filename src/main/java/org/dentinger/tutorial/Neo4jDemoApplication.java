@@ -2,6 +2,7 @@ package org.dentinger.tutorial;
 
 import java.util.Arrays;
 import java.util.List;
+import org.dentinger.tutorial.dal.SportsBallRepository;
 import org.dentinger.tutorial.loader.NodeIndexes;
 import org.dentinger.tutorial.service.Neo4jLoaderService;
 import org.dentinger.tutorial.service.NodeFirstNeo4jLoaderService;
@@ -25,10 +26,12 @@ public class Neo4jDemoApplication {
   @Bean
   CommandLineRunner runLoader(Neo4jLoaderService service,
                                     NodeFirstNeo4jLoaderService nodeFirstNeo4jLoaderService,
+                                    SportsBallRepository sportsBallRepository,
                                     NodeIndexes nodeIndexes) {
     return args -> {
-      logger.debug("Running LeagueManager loading process");
       List<String> list = Arrays.asList(args);
+      sportsBallRepository.init(list);
+      logger.debug("Running LeagueManager loading process");
       if (!list.contains("nodeFirst")) {
         if (list.contains("cleanup")) {
           nodeFirstNeo4jLoaderService.cleanup();
