@@ -62,8 +62,8 @@ public class NodeFirstNeo4jLoaderService {
       teamLoader.loadTeamRelationships();
     }
     if (list.contains("loadPersons")) {
-      personLoader.loadPersonRelationships();
-      personLoader.loadFansRelationships();
+      personLoader.loadPlayerRelationships();
+      personLoader.loadFanRelationships();
     }
 
     if (list.contains("loadAll")) {
@@ -73,8 +73,8 @@ public class NodeFirstNeo4jLoaderService {
       teamLoader.loadTeamNodes();
       teamLoader.loadTeamRelationships();
       personLoader.loadPersonNodes();
-      personLoader.loadPersonRelationships();
-      personLoader.loadFansRelationships();
+      personLoader.loadPlayerRelationships();
+      personLoader.loadFanRelationships();
     }
   }
 }

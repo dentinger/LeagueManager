@@ -29,14 +29,15 @@ public class NFPersonLoader {
   private String MERGE_PERSON_NODES =
       "unwind {json} as person "
           + "merge (p:Person {personId: person.personId}) "
-          + " on create set p.uuid = person.uuid, p.name = person.name, p.dateOfBirth = person.dateOfBirth ";
+          + " on create set p.uuid = person.uuid, p.name = person.name, p.dateOfBirth = person.dateOfBirth, "
+          + " p.ttl=40000 ";
 
   private String MERGE_PERSON_RELATIONSHIPS =
       " UNWIND {json} AS person "
           + "unwind person.playson as team "
           + "match (t:Team {teamId: team.teamId}) "
           + "match (p:Person {personId: person.personId}) "
-          + "merge(t)-[:PLAYS_ON]-(p) ";
+          + "merge(t)-[:PLAYS_ON {ttl:30000}]-(p) ";
 
   private String MERGE_FAN_RELATIONSHIPS =
       " UNWIND {json} AS person "
@@ -89,7 +90,7 @@ public class NFPersonLoader {
         System.currentTimeMillis() - start);
   }
 
-  public void loadPersonRelationships() {
+  public void loadPlayerRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Person> persons = repo.getPersons();
     logger.info("About to load Person relationships using {} threads", numThreads);
@@ -109,7 +110,7 @@ public class NFPersonLoader {
             System.currentTimeMillis() - start);
   }
 
-  public void loadFansRelationships() {
+  public void loadFanRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
     List<Person> fans = repo.getFans();
     logger.info("About to load Fan relationships using {} threads", numThreads);

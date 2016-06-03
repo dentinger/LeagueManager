@@ -28,7 +28,7 @@ leagues:
 
 teams:
   loading.threads: 100
-  count: 100000
+  count: 10000
   minLeagueMemberships: 1
   maxLeagueMemberships: 5
   minPlayersPerTeam: 8

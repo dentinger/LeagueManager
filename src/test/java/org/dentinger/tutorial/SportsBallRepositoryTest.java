@@ -1,5 +1,6 @@
 package org.dentinger.tutorial;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,10 +22,10 @@ public class SportsBallRepositoryTest {
   MockEnvironment mockEnvironment = new MockEnvironment();
   private SportsBallRepository sut;
   private String regionsCount = "20";
-  private String leaguesCount = "3000";
+  private String leaguesCount = "300";
   private String minRegionAffiliations = "1";
   private String maxRegionAffiliations = "3";
-  private String teamsCount = "100000";
+  private String teamsCount = "1000";
   private String minLeagueMemberships = "1";
   private String maxLeagueMemberships = "5";
   private String minPlayersPerTeam = "8";
@@ -44,6 +45,7 @@ public class SportsBallRepositoryTest {
     mockEnvironment.setProperty("teams.maxPlayersPerTeam",maxPlayersPerTeam);
 
     sut = new SportsBallRepository(mockEnvironment);
+    sut.init(Arrays.asList("loadAll"));
   }
 
   @Test
