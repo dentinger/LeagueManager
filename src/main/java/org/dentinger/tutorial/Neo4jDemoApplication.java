@@ -1,5 +1,6 @@
 package org.dentinger.tutorial;
 
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import java.util.Arrays;
 import java.util.List;
 import org.dentinger.tutorial.dal.SportsBallRepository;
@@ -12,7 +13,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @SpringBootApplication
 public class Neo4jDemoApplication {
@@ -21,6 +22,13 @@ public class Neo4jDemoApplication {
 
   public static void main(String[] args) {
     SpringApplication.run(Neo4jDemoApplication.class, args);
+  }
+
+  @Bean
+  public Jackson2ObjectMapperBuilder jacksonBuilder() {
+    Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+    builder.filters(new SimpleFilterProvider().setFailOnUnknownId(false));
+    return builder;
   }
 
   @Bean
