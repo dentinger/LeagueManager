@@ -1,5 +1,9 @@
 package org.dentinger.tutorial.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
@@ -13,6 +17,7 @@ import org.neo4j.ogm.annotation.typeconversion.Convert;
 import org.neo4j.ogm.annotation.typeconversion.DateLong;
 
 @NodeEntity
+@JsonFilter("person")
 public class Person {
 
   @GraphId
@@ -23,8 +28,10 @@ public class Person {
   private String name;
   @DateLong
   private Date dateOfBirth;
+  @JsonBackReference
   @Relationship(type = "PLAYS_ON", direction = Relationship.UNDIRECTED)
   private Set<Team> playson;
+  @JsonBackReference
   @Relationship(type = "FAN_OF", direction = Relationship.UNDIRECTED)
   private Set<Team> fanOf;
 

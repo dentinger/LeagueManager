@@ -1,5 +1,8 @@
 package org.dentinger.tutorial.config;
 
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.dentinger.tutorial.repository.CustomGraphRepositoryImpl;
+import org.neo4j.ogm.json.ObjectMapperFactory;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +12,7 @@ import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableNeo4jRepositories(basePackages = "org.dentinger.tutorial.repository")
+@EnableNeo4jRepositories(basePackages = "org.dentinger.tutorial.repository", repositoryBaseClass = CustomGraphRepositoryImpl.class)
 @EnableTransactionManagement
 public class NeoConfiguration extends Neo4jConfiguration {
   @Value("${neo4j.url}")
@@ -28,6 +31,9 @@ public class NeoConfiguration extends Neo4jConfiguration {
         .setURI(neo4jUri)
         .setCredentials(neo4jUsername, neo4jPassword)
         .setDriverClassName(neo4jDriver);
+
+    //yuck!
+    ObjectMapperFactory.objectMapper().setFilterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
 
     return config;
   }
