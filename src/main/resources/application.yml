@@ -1,6 +1,6 @@
 neo4j:
   driver: org.neo4j.ogm.drivers.http.driver.HttpDriver
-  url: http://192.168.99.100:7474/
+  url: http://localhost:7474/
   username: neo4j
   password: blah
   packages:
