@@ -1,5 +1,7 @@
 package org.dentinger.tutorial.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import java.util.HashSet;
 import java.util.Set;
 import org.neo4j.ogm.annotation.GraphId;
@@ -7,11 +9,13 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 
 @NodeEntity
+@JsonFilter("team")
 public class Team {
   @GraphId
   private Long id;
   private Long teamId;
   private String name;
+  @JsonBackReference
   @Relationship(type = "MEMBERSHIP", direction = Relationship.UNDIRECTED)
   private Set<League> leagues;
   @Relationship(type = "PLAYS_ON", direction = Relationship.UNDIRECTED)
