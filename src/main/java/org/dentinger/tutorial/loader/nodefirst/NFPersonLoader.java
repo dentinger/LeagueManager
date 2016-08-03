@@ -29,22 +29,21 @@ public class NFPersonLoader {
   private String MERGE_PERSON_NODES =
       "unwind {json} as person "
           + "merge (p:Person {personId: person.personId}) "
-          + " on create set p.uuid = person.uuid, p.name = person.name, p.dateOfBirth = person.dateOfBirth, "
-          + " p.ttl=40000 ";
+          + " on create set p.uuid = person.uuid, p.name = person.name, p.dateOfBirth = person.dateOfBirth";
 
   private String MERGE_PERSON_RELATIONSHIPS =
       " UNWIND {json} AS person "
           + "unwind person.playson as team "
           + "match (t:Team {teamId: team.teamId}) "
           + "match (p:Person {personId: person.personId}) "
-          + "merge(t)-[:PLAYS_ON {ttl:30000}]-(p) ";
+          + "merge (t)-[:PLAYS_ON ]-(p) ";
 
   private String MERGE_FAN_RELATIONSHIPS =
       " UNWIND {json} AS person "
           + "unwind person.fanOf as team "
           + "match (t:Team {teamId: team.teamId}) "
           + "match (p:Person {personId: person.personId}) "
-          + "merge(t)-[:FAN_OF]-(p) ";
+          + "merge (t)-[:FAN_OF]-(p) ";
 
 
   private String CLEAN_UP =

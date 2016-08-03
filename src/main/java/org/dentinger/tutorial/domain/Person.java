@@ -28,10 +28,10 @@ public class Person {
   private String name;
   @DateLong
   private Date dateOfBirth;
-  @JsonBackReference
+ // @JsonBackReference
   @Relationship(type = "PLAYS_ON", direction = Relationship.UNDIRECTED)
   private Set<Team> playson;
-  @JsonBackReference
+  //@JsonBackReference
   @Relationship(type = "FAN_OF", direction = Relationship.UNDIRECTED)
   private Set<Team> fanOf;
 

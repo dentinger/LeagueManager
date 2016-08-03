@@ -1,5 +1,6 @@
 package org.dentinger.tutorial.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.util.HashSet;
 import java.util.Set;
 import org.neo4j.ogm.annotation.GraphId;
@@ -15,6 +16,7 @@ public class League {
   private String name;
   @Relationship(type = "SANCTION", direction = Relationship.UNDIRECTED)
   private Set<Region> regions;
+  @JsonBackReference
   @Relationship(type = "MEMBERSHIP", direction = Relationship.UNDIRECTED)
   private Set<Team> teams;
 

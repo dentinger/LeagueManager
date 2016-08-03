@@ -35,7 +35,7 @@ public class NFTeamLoader {
           + "unwind team.leagues as league "
           + "match (l:League {leagueId: league.leagueId}) "
           + "match (t:Team {teamId: team.teamId}) "
-          + "merge(t)-[:MEMBERSHIP]-(l) ";
+          + "merge (t)-[:MEMBERSHIP]-(l) ";
 
   private String CLEAN_UP =
       "match (t:Team) detach delete t";

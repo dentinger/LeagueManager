@@ -15,7 +15,7 @@ public class Team {
   private Long id;
   private Long teamId;
   private String name;
-  @JsonBackReference
+ // @JsonBackReference
   @Relationship(type = "MEMBERSHIP", direction = Relationship.UNDIRECTED)
   private Set<League> leagues;
   @Relationship(type = "PLAYS_ON", direction = Relationship.UNDIRECTED)
