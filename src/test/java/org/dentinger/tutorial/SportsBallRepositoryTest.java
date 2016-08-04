@@ -92,7 +92,7 @@ public class SportsBallRepositoryTest {
     List<Team> teamList = sut.getTeams();
     Long min = Long.valueOf(minPlayersPerTeam).longValue();
     Long max = Long.valueOf(maxPlayersPerTeam).longValue();
-    int playerCount = sut.getPersons().size();
+    int playerCount = sut.getPlayers().size();
     assertTrue((min * teamList.size()) <= playerCount && (max * teamList.size()) >= playerCount);
   }
 
@@ -103,7 +103,7 @@ public class SportsBallRepositoryTest {
     Long max = Long.valueOf(maxPlayersPerTeam).longValue();
     teamList.stream()
         .forEach(team -> {
-          Optional<List<Person>> persons = sut.getPersons(team);
+          Optional<List<Person>> persons = sut.getPlayers(team);
           assertTrue(min <= persons.get().size() && persons.get().size() <= max);
         });
   }
