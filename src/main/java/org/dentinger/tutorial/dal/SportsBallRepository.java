@@ -29,8 +29,9 @@ public class SportsBallRepository {
   private List<Region> regionList;
   private Map<Long, List<League>> leagueMap; // key is region id
   private Map<Long, List<Team>> teamMap; // key is league id
-  private Map<Long, List<Person>> personMap; // key is team id
-  private Map<Long, List<Person>> fanMap;
+  private Map<Long, List<Person>> playerMap; // key is team id
+  private Map<Long, List<Person>> fanMap; // key is team id
+  private List<Person> allPlayers;
   private static final AtomicLong personIdGenerator = new AtomicLong(0);
   //private static final AtomicLong fanIdGenerator = new AtomicLong(0);
 
@@ -61,13 +62,13 @@ public class SportsBallRepository {
     return Optional.ofNullable(teamMap.get(league.getLeagueId()));
   }
 
-  public List<Person> getPersons() {
-    return personMap.values().stream().flatMap(l -> l.stream()).distinct()
+  public List<Person> getPlayers() {
+    return playerMap.values().stream().flatMap(l -> l.stream()).distinct()
         .collect(Collectors.toList());
   }
 
-  public Optional<List<Person>> getPersons(Team team) {
-    return Optional.ofNullable(personMap.get(team.getTeamId()));
+  public Optional<List<Person>> getPlayers(Team team) {
+    return Optional.ofNullable(playerMap.get(team.getTeamId()));
   }
 
   public List<Person> getFans() {
@@ -137,11 +138,13 @@ public class SportsBallRepository {
     int minFansPerTeam = Integer.valueOf(environment.getProperty("teams.minFansPerTeam", "2"));
     int maxFansPerTeam = Integer.valueOf(environment.getProperty("teams.maxFansPerTeam", "4"));
     teamMap = new HashMap<>();
-    personMap = new HashMap<>();
+    playerMap = new HashMap<>();
     fanMap = new HashMap<>();
+    allPlayers = new ArrayList<>();
     List<League> leagueList = getLeagues();
     Random rand = new Random();
     AtomicLong playerCount = new AtomicLong(0L);
+    AtomicLong fanCount = new AtomicLong(0L);
     LongStream.range(1, teamCount + 1)
         .forEach(id -> {
           Team team = new Team(id, generateName(rand, id));
@@ -158,30 +161,12 @@ public class SportsBallRepository {
               });
           if( loadPlayers) {
             playerCount.addAndGet(generatePlayers(team, minPlayersPerTeam, maxPlayersPerTeam));
-            playerCount.addAndGet(generateFans(team, minFansPerTeam, maxFansPerTeam));
+            fanCount.addAndGet(generateFans(team, minFansPerTeam, maxFansPerTeam));
           }
         });
     logger.info("Generation of {} teams is complete",teamCount);
     logger.info("Generation of {} players is complete",playerCount.get());
-  }
-
-  private int generateFans(Team team, int minFansPerTeam, int maxFansPerTeam) {
-    Random rand = new Random();
-    int fanCount = (minFansPerTeam == maxFansPerTeam) ? maxFansPerTeam :
-        rand.ints(minFansPerTeam, maxFansPerTeam).limit(1).findFirst()
-            .getAsInt();
-    LongStream.range(1, fanCount + 1)
-        .forEach(id -> {
-          Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
-          List<Person> persons = fanMap.get(team.getTeamId());
-          if (persons == null) {
-            persons = new ArrayList<>();
-            fanMap.put(team.getTeamId(), persons);
-          }
-          persons.add(person);
-          person.fanOf(team);
-        });
-    return fanCount;
+    logger.info("Generation of {} fans is complete",fanCount.get());
   }
 
   private int generatePlayers(Team team, int minPlayers, int maxPlayers) {
@@ -192,15 +177,46 @@ public class SportsBallRepository {
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
           Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
-          List<Person> persons = personMap.get(team.getTeamId());
+          List<Person> persons = playerMap.get(team.getTeamId());
           if (persons == null) {
             persons = new ArrayList<>();
-            personMap.put(team.getTeamId(), persons);
+            playerMap.put(team.getTeamId(), persons);
           }
           persons.add(person);
           person.addTeam(team);
+          allPlayers.add(person);
         });
     return playerCount;
+  }
+
+  /*
+  Fans are a mix of new persons and already existing players
+   */
+  private int generateFans(Team team, int minFansPerTeam, int maxFansPerTeam) {
+    Random rand = new Random();
+    int fanCount = (minFansPerTeam == maxFansPerTeam) ? maxFansPerTeam :
+        rand.ints(minFansPerTeam, maxFansPerTeam).limit(1).findFirst()
+            .getAsInt();
+    LongStream.range(1, fanCount + 1)
+        .forEach(id -> {
+          Person person;
+          if( (id % 2) == 0 && allPlayers.size() > 100){
+            // Pull an existing player and make them a fan
+            int playerOffset = rand.ints(0, allPlayers.size()).limit(1).findFirst()
+                .getAsInt();
+            person = allPlayers.get(playerOffset);
+          }else{
+            person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
+          }
+          List<Person> persons = fanMap.get(team.getTeamId());
+          if (persons == null) {
+            persons = new ArrayList<>();
+            fanMap.put(team.getTeamId(), persons);
+          }
+          persons.add(person);
+          person.fanOf(team);
+        });
+    return fanCount;
   }
 
   private Stream<Long> getParentOffsets(long range, int minReturned, int maxReturned) {
@@ -217,8 +233,8 @@ public class SportsBallRepository {
   };
   private String[] nouns = new String[]{
       "Dogs", "Pumas", "Jack Fruit Farmers", "Strikers", "Bashers", "Guavateers", "Herd", "Badgers",
-      "Spiders", "Pulled Pork Pirates", "Apes", "Hobos", "Pictures", "Games", "Bed", "Basket",
-      "Flower", "Apples", "Chips", "Nuubs", "Pros"
+      "Spiders", "Pulled Pork Pirates", "Apes", "Hobos", "Pictures", "Games", "Bed Bugs", "Basket Dumpers",
+      "Flowers", "Apples", "Chips", "Noobs", "Pros", "Jack Wagons", "Crap Tons"
   };
 
   private String[] firstNames = new String[]{

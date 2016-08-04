@@ -70,7 +70,7 @@ public class NFPersonLoader {
   public void loadPersonNodes() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
 
-    List<Person> personList = repo.getPersons();
+    List<Person> personList = repo.getPlayers();
     List<Person> fanList = repo.getFans();
     personList.addAll(fanList);
     logger.info("About to load {} Persons using {} threads", personList.size(), numThreads);
@@ -91,14 +91,14 @@ public class NFPersonLoader {
 
   public void loadPlayerRelationships() {
     AggregateExceptionLogger aeLogger = AggregateExceptionLogger.getLogger(this.getClass());
-    List<Person> persons = repo.getPersons();
+    List<Person> players = repo.getPlayers();
     logger.info("About to load Person relationships using {} threads", numThreads);
     personWorker.getRecordsWritten().set(0);
 
-    int subListSize = (int) Math.floor(persons.size() / numThreads);
+    int subListSize = (int) Math.floor(players.size() / numThreads);
     long start = System.currentTimeMillis();
 
-    Lists.partition(persons, subListSize).stream().parallel()
+    Lists.partition(players, subListSize).stream().parallel()
         .forEach(subList -> {
           personWorker.doSubmitableWork(aeLogger, subList, MERGE_PERSON_RELATIONSHIPS);
         });
