@@ -151,6 +151,48 @@ You can load data by going to your browser and hitting the following url:
 The current pattern (and not the best) is to pass a request parameter equal to itself for any of
 the general application parameters.
 
+## Sample Queries on the data
+
+### Recommend a different team to become a fan of
+
+You favorite team might not be doing well or you are wanting to impress your teammates with
+how much you know about their favorite teams.  How can you find all the teams to consider?
+By running the following query on your team you can find the answer. You just have to substitute
+your teamId and playerId in the two spots they are required
+
+```
+match (team:Team) - [plays_on:PLAYS_ON] - (player:Person) - [fan_of:FAN_OF] - (fav_team:Team)
+where team.teamId = {teamId}
+with team, collect(fav_team) as players_favorites, collect(player) as team_players
+with team, collect({team_players: team_players, favorites: players_favorites}) as units
+unwind units as unit
+  unwind unit.team_players as tp
+   unwind unit.favorites as potential_team
+    match (t:Team {teamId: potential_team.teamId}) where NOT((team)-[:PLAYS_ON] - (tp) - [:FAN_OF] - (potential_team) )
+  with team, tp as player, collect(t) as potential_teams_for_player
+where player.personId = {playerId}
+return player, potential_teams_for_player
+```
+### Give recommendations to the whole team
+You want to your team to be a cohesive Sportsball team and want/need everyone to like the same
+teams.  Well were is the query to tell you what other teams each player on a team should become
+fans of as well.
+ ```
+ match (team:Team) - [plays_on:PLAYS_ON] - (player:Person) - [fan_of:FAN_OF] - (fav_team:Team)
+ where team.teamId = {teamId}
+ with team, collect(fav_team) as players_favorites, collect(player) as team_players
+ with team, collect({team_players: team_players, favorites: players_favorites}) as units
+ unwind units as unit
+   unwind unit.team_players as tp
+    unwind unit.favorites as potential_team
+     match (t:Team {teamId: potential_team.teamId}) where NOT((team)-[:PLAYS_ON] - (tp) - [:FAN_OF] - (potential_team) )
+   with team, tp as player, collect(t) as potential_teams_for_player
+ with team , collect( [player, potential_teams_for_player]) as player_recs
+ return team, player_recs
+ ```
+This is a generalized form of the previous query.
+
+## Other stuff
 [Outstanding Concerns](./docs/outstanding_concerns.md)
 
 [Project work that is still needed](./docs/TODOs.md)
