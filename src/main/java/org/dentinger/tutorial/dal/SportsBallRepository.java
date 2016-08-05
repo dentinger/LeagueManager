@@ -79,14 +79,15 @@ public class SportsBallRepository {
   public void init(List<String> list) {
     long start = System.currentTimeMillis();
     logger.info("Initializing SportsBall Repo ...");
-    if( list.contains("loadRegions") || list.contains("loadAll")) {
+    if (list.contains("loadRegions") || list.contains("loadAll")) {
       generateRegions();
     }
-    if(list.contains("loadLeagues") || list.contains("loadAll")) {
+    if (list.contains("loadLeagues") || list.contains("loadAll")) {
       generateLeagues();
     }
-    if( list.contains("loadTeams") || list.contains("loadAll")) {
-      generateTeams(list.contains("loadPlayers") || list.contains("loadAll")); // Also generates persons - optionally
+    if (list.contains("loadTeams") || list.contains("loadAll")) {
+      generateTeams(list.contains("loadPlayers") || list
+          .contains("loadAll")); // Also generates persons - optionally
     }
     logger.info("Initialization complete: {}ms", System.currentTimeMillis() - start);
   }
@@ -96,7 +97,7 @@ public class SportsBallRepository {
     regionList = new ArrayList<>();
     LongStream.range(1, regionCount + 1)
         .forEach(id -> regionList.add(new Region(id, "Region-" + id)));
-    logger.info("Generation of {} regions is complete",regionCount);
+    logger.info("Generation of {} regions is complete", regionCount);
   }
 
   private void generateLeagues() {
@@ -122,7 +123,7 @@ public class SportsBallRepository {
                 league.addRegion(regionList.get(x.intValue()));
               });
         });
-    logger.info("Generation of {} leagues is complete",leagueCount);
+    logger.info("Generation of {} leagues is complete", leagueCount);
   }
 
   private void generateTeams(boolean loadPlayers) {
@@ -159,14 +160,14 @@ public class SportsBallRepository {
                 teams.add(team);
                 team.addLeague(leagueList.get(x.intValue()));
               });
-          if( loadPlayers) {
+          if (loadPlayers) {
             playerCount.addAndGet(generatePlayers(team, minPlayersPerTeam, maxPlayersPerTeam));
             fanCount.addAndGet(generateFans(team, minFansPerTeam, maxFansPerTeam));
           }
         });
-    logger.info("Generation of {} teams is complete",teamCount);
-    logger.info("Generation of {} players is complete",playerCount.get());
-    logger.info("Generation of {} fans is complete",fanCount.get());
+    logger.info("Generation of {} teams is complete", teamCount);
+    logger.info("Generation of {} players is complete", playerCount.get());
+    logger.info("Generation of {} fans is complete", fanCount.get());
   }
 
   private int generatePlayers(Team team, int minPlayers, int maxPlayers) {
@@ -176,7 +177,8 @@ public class SportsBallRepository {
             .getAsInt();
     LongStream.range(1, playerCount + 1)
         .forEach(id -> {
-          Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
+          Person person = new Person(personIdGenerator.incrementAndGet(), randomUUID(),
+              generatePersonName(rand));
           List<Person> persons = playerMap.get(team.getTeamId());
           if (persons == null) {
             persons = new ArrayList<>();
@@ -200,13 +202,14 @@ public class SportsBallRepository {
     LongStream.range(1, fanCount + 1)
         .forEach(id -> {
           Person person;
-          if( (id % 2) == 0 && allPlayers.size() > 100){
+          if ((id % 2) == 0 && allPlayers.size() > 100) {
             // Pull an existing player and make them a fan
             int playerOffset = rand.ints(0, allPlayers.size()).limit(1).findFirst()
                 .getAsInt();
             person = allPlayers.get(playerOffset);
-          }else{
-            person = new Person(personIdGenerator.incrementAndGet(), randomUUID(), generatePersonName(rand));
+          } else {
+            person = new Person(personIdGenerator.incrementAndGet(), randomUUID(),
+                generatePersonName(rand));
           }
           List<Person> persons = fanMap.get(team.getTeamId());
           if (persons == null) {
@@ -228,13 +231,35 @@ public class SportsBallRepository {
 
   private String[] adjs = new String[]{
       "Fast", "Big", "Mighty", "Super", "Shining", "Cold Hearted", "Free Range", "Thundering",
-      "Purple", "Great Green", "Lovely", "Yellow", "Stuffed", "Flat", "Dirty",
-      "Tiny", "Alpha", "Omega", "Vegetarian", "Pirate"
+      "Purple", "Great Green", "Lovely", "Yellow", "Stuffed", "Flat", "Dirty", "Tiny", "Alpha",
+      "Omega", "Vegetarian", "Pirate", "Fighting", "Happy", "Old", "Ole", "Dazzling", "Daring",
+      "Darling", "Dead", "Demon", "Blue", "Wild", "", "Flying", "Swift", "Golden", "Hot",
+      "Hairless", "Hairsplitting", "Haunted", "Hazardous", "Hasty", "Half", "Hewn", "Humdrum",
+      "Long", "Lonely", "Sad", "Brainy", "Empty", "Snowy", "Wholesome", "Gross", "Clumsy",
+      "Clueless", "Clean", "Compact", "Cowardly", "Biting", "Formerly", "Invisible", "Joyless",
+      "Infinite", "Moral", "United", "Jumbo", "Dark", "Light", "Good", "Disheveled", "Great",
+      "Mediocre", "Average", "Middle of the Road", "Leaky", "Kingy", "Pink", "Iron", "Silver",
+      "Shaddy", "Frequent", "Bumpy", "Boiling", "Tasty", "All Knowing", "Awesome", "Hard Core",
+      "Inky", "Tatooed", "Lame", "Starving", "Rank", "Rancid", "Peutrid", "Psycho", "They Might Be",
+      "Lost", "Pokedotted", "Raving Mad", "Wet", "Tall", "Skinny", "Slim", "Fat", "Phat"
+
   };
   private String[] nouns = new String[]{
       "Dogs", "Pumas", "Jack Fruit Farmers", "Strikers", "Bashers", "Guavateers", "Herd", "Badgers",
-      "Spiders", "Pulled Pork Pirates", "Apes", "Hobos", "Pictures", "Games", "Bed Bugs", "Basket Dumpers",
-      "Flowers", "Apples", "Chips", "Noobs", "Pros", "Jack Wagons", "Crap Tons"
+      "Spiders", "Pulled Pork Pirates", "Apes", "Hobos", "Pictures", "Games", "Bed Bugs",
+      "Basket Dumpers", "Flowers", "Apples", "Chips", "Noobs", "Pros", "Jack Wagons", "Crap Tons",
+      "Aces", "Aggies", "Argonauts", "Avengers", "Aussies", "Bandits", "Bears", "Black Knights",
+      "Red Knights", "Demons", "Camels", "Carp", "Catfish", "Guppies", "Crush", "Crusaders",
+      "Dazzle", "Dragons", "Aviators", "Heat", "Anteaters", "Coders", "Programmers", "Engineers",
+      "Farmers", "Jacks", "Hearts", "Habberdashers", "Snakes", "Shoes", "Chairs", "Out Houses",
+      "Bottles", "Johns", "Kids", "Monsters", "Thieves", "Lions", "Clouds", "Lightning", "Flys",
+      "Mosquitos", "Ghosts", "Zombies", "Chums", "Teachers", "Students", "Bikers", "LLamas",
+      "Lugnuts", "Pygmies", "Rebels", "Titans", "Kittens", "Wizards", "Ichabods", "Horsemen",
+      "Islanders", "Bums", "Turtles", "Monekys", "Plummers", "Plungers", "Artists", "Jokers",
+      "Pyschos", "Superheros", "Men", "Women", "Toys", "Giants", "Aliens", "Fools", "Jesters",
+      "Clowns", "Users", "Programs", "Elves", "Goblins", "Ogers", "Rangers", "Orks", "Gnomes",
+      "Dwarves", "Princes", "Queens", "Princesses", "Ponies", 
+
   };
 
   private String[] firstNames = new String[]{
