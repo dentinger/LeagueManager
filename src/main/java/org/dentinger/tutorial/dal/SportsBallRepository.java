@@ -258,7 +258,7 @@ public class SportsBallRepository {
       "Islanders", "Bums", "Turtles", "Monekys", "Plummers", "Plungers", "Artists", "Jokers",
       "Pyschos", "Superheros", "Men", "Women", "Toys", "Giants", "Aliens", "Fools", "Jesters",
       "Clowns", "Users", "Programs", "Elves", "Goblins", "Ogers", "Rangers", "Orks", "Gnomes",
-      "Dwarves", "Princes", "Queens", "Princesses", "Ponies", 
+      "Dwarves", "Princes", "Queens", "Princesses", "Ponies"
 
   };
 
