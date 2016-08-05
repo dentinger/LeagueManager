@@ -291,7 +291,10 @@ public class SportsBallRepository {
       "Jacob", "Barbara", "Nolan", "Ashanti", "Thanh", "Kaylee", "Alexis", "Lyman",
       "Hae", "Christi", "Marlena", "Colin", "Enola", "Enid", "Leticia", "Ron",
       "Dan", "Shawn", "Erik", "Tony", "Gerald", "Jane", "Michael", "Mike", "Joseph",
-      "Wesley", "Haley", "Maynard"
+      "Wesley", "Haley", "Maynard", "Chet", "Blake", "Sally", "Susan", "Amy", "Ami",
+      "Jennifer", "Kristen", "Nicole", "Halie", "Jessica", "Zelda", "Link", "Mario",
+      "Luigi", "Olivia", "Beth", "Kim", "Jane", "Shelley", "Rick", "Tom", "Tommy",
+      "Daniel", "Wes", "Jordan", "Betty", "Candy", "Brian", "Peter", "Chris"
   };
 
   private String[] lastNames = new String[]{
