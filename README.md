@@ -21,7 +21,7 @@ SportsBall teams and their Leagues will be:
  * Teams play in one or more Leagues
  * Regions contain one or more Leagues
 
- ![Leagure Manager Model](./docs/LeagueManagerModel.png)
+ ![League Manager Model](./docs/LeagueManagerModel.png)
 
 SportsBall is the worlds most popular, full contact, high speed sporting extravaganza that delivers
 a competitive advantage through continuous excitement delivery at a speed that matters.
@@ -39,31 +39,33 @@ LeagueManager this was not being done properly and as a result performance suffe
 This approach uses the UNWIND statement with nodes and relationships being created together.
 An example of this approach:
 
-    unwind {json} as league
-         unwind league.regions as region
-             merge (r:Region {id: region.id}) 
-            merge (l:League {id: league.id})
-                 on create set l.name = league.name
-            merge (r)-[:SANCTION]-(l);
-
+```
+unwind {json} as league
+    unwind league.regions as region
+      merge (r:Region {id: region.id}) 
+      merge (l:League {id: league.id})
+        on create set l.name = league.name
+      merge (r)-[:SANCTION]-(l);
+```
 
 ### Node First with UNWIND
-This approach still uses unwind but first tries to create nodes that are known and then it will create relationships that
-are known.  This is a two pass approach.  An example would be run node cypher statement then run
+This approach still uses unwind but first tries to create nodes that are known and then it will create relationships that are known. This is a two pass approach. An example would be run node cypher statement then run
 relationship statement.
 
-    private String MERGE_LEAGUES_NODE =
-          "unwind {json} as league "
-              + "unwind league.regions as region "
-              + "    merge (l:League {id: league.id})"
-              + "     on create set l.name = league.name ";
+```
+private String MERGE_LEAGUES_NODE =
+    "unwind {json} as league "
+        + "unwind league.regions as region "
+        + "    merge (l:League {id: league.id})"
+        + "     on create set l.name = league.name ";
 
-      private String MERGE_LEAGUES_RELATIONSHIPS =
-          "unwind {json} as league "
-              + "unwind league.regions as region "
-              + "   match (r:Region {id: region.id})"
-              + "    match (l:League {id: league.id})"
-              + "    merge (r)-[:SANCTION]-(l)";
+private String MERGE_LEAGUES_RELATIONSHIPS =
+    "unwind {json} as league "
+        + "unwind league.regions as region "
+        + "   match (r:Region {id: region.id})"
+        + "    match (l:League {id: league.id})"
+        + "    merge (r)-[:SANCTION]-(l)";
+```
 
 ## Handling large data and deadlocks
 As part of the process of loading large (or even small to medium) amounts of data into Neo4j the dreaded deadlock can be encountered.
@@ -92,7 +94,11 @@ There are a few properties that have a more impact on the behavior of the app.  
 * neo4j.username - neo4j user
 * neo4j.password - password for neo4j.user
 
-There are three ways that the project can be run: Command Line, From and IDE, and From a Docker image.
+There are three ways that the project can be run:
+
+* From Command Line
+* From IDE
+* From a Docker image.
 
 ### General application parameters
 
@@ -108,7 +114,7 @@ There are three ways that the project can be run: Command Line, From and IDE, an
 
 ### Command line and IDE Running:
 
-To run the project from the command line, first do a gradle clean and build.  Then you can use any
+To run the project from the command line, first do a ```gradle clean build```.  Then you can use any
 of the general application parameters passed in on the command line.
 
 If running from the an IDE, the program arguments would use any of the general program arguments.
@@ -130,23 +136,20 @@ directory for your Neo4j install.  Edit the neo4j.properties so that following l
 # To have HTTP accept non-local connections, uncomment this line
 dbms.connector.http.address=0.0.0.0:7474
 ```
-This will allow non local connections which is needed for docker to access Neo4j. As a benefit,
-the configuration changed to make docker work also allows the project to connect to any Neo4j instance.
-All that is needed is to over ride the spring boot properties for Neo4j.  For docker this means that
- the neo4j.url will be specified as an environment variable in the docker container at run time.
+This will allow non local connections which is needed for docker to access Neo4j. As a benefit, the configuration changed to make docker work also allows the project to connect to any Neo4j instance. All that is needed is to override the spring boot properties for Neo4j.  For docker this means that the neo4j.url will be specified as an environment variable in the docker container at run time.
 
  Steps to run in docker:
 
-* ./gradlew clean build
-*  docker build -t *put a tag name here* .  #note that that the . is needed
-* docker run  --rm -e "neo4j.url=http://*your ip*:7474/" -t -i -p 8080:8080 *put a tag name here*
+* ```./gradlew clean build```
+*  ```docker build -t _**put a tag name here**_ . #note that that the . is needed```
+* ```docker run  --rm -e "neo4j.url=http://*your ip*:7474/" -t -i -p 8080:8080 _**put a tag name here**_```
 
 This will run the application in docker.  By default no parameters are passed to the application so nothing loads.
 Right now the web interface only supports NodeFirst processing.
 You can load data by going to your browser and hitting the following url:
 
-* Run a cleanup -- http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst
-* Load regions -- http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst&loadRegions=loadRegions
+* Run a cleanup: [http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst](http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst)
+* Load regions: [http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst&loadRegions=loadRegions](http://localhost:8080//leaguemanager/load?cleanup=cleanup&nodeFirst=nodeFirst&loadRegions=loadRegions)
 
 The current pattern (and not the best) is to pass a request parameter equal to itself for any of
 the general application parameters.
